@@ -54,9 +54,9 @@ export const AISummary = ({ summary, status, error, onSummaryChange, onRegenerat
     if (!summary) {
       return {
         Agenda: { title: "Agenda", blocks: [] },
-        Decisions: { title: "Decisions", blocks: [] },
-        ActionItems: { title: "Action Items", blocks: [] },
-        ClosingRemarks: { title: "Closing Remarks", blocks: [] }
+        Decisions: { title: "Entscheidungen", blocks: [] },
+        ActionItems: { title: "Aufgaben", blocks: [] },
+        ClosingRemarks: { title: "Abschlussnotizen", blocks: [] }
       };
     }
     return ensureUniqueBlockIds(summary);

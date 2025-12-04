@@ -1,44 +1,44 @@
 {
-      "name": "Client / Sales Meeting",
-      "description": "Capture client goals, deliverables, and next steps.",
-      "sections": [
-        {
-          "title": "Meeting Metadata",
-          "instruction": "Date, time, location/modality, account manager",
-          "format": "string"
-        },
-        {
-          "title": "Attendees",
-          "instruction": "Client and vendor attendees with roles",
-          "format": "list"
-        },
-        {
-          "title": "Client Goals & Success Criteria",
-          "instruction": "What the client wants to achieve and how success will be measured",
-          "format": "paragraph"
-        },
-        {
-          "title": "Agreed Deliverables",
-          "instruction": "Deliverables, owners, and due dates",
-          "format": "list",
-          "item_format": "| **Deliverable** | **Owner** | **Due Date** |\n| --- | --- | --- |"
-        },
-        {
-          "title": "Commercial Terms Discussed",
-          "instruction": "Pricing, SLAs, payment terms or contract items discussed",
-          "format": "paragraph"
-        },
-        {
-          "title": "Risks & Concerns",
-          "instruction": "Client concerns, blockers, or escalation items",
-          "format": "list",
-          "item_format": "| **Concern** | **Impact** | **Owner** |\n| --- | --- | --- |"
-        },
-        {
-          "title": "Next Steps",
-          "instruction": "Actions, owners, and due dates",
-          "format": "list",
-          "item_format": "| **Owner** | **Action** | **Due Date** |\n| --- | --- | --- |"
-        }
-      ]
+  "name": "Kunden- / Sales-Meeting",
+  "description": "Kundenziele, Deliverables und nächste Schritte festhalten.",
+  "sections": [
+    {
+      "title": "Meeting-Metadaten",
+      "instruction": "Datum, Uhrzeit, Ort/Modus, Account Manager",
+      "format": "string"
+    },
+    {
+      "title": "Teilnehmende",
+      "instruction": "Kund:innen und Anbieter:innen mit Rollen",
+      "format": "list"
+    },
+    {
+      "title": "Kundenziele & Erfolgskriterien",
+      "instruction": "Was der Kunde erreichen möchte und wie Erfolg gemessen wird",
+      "format": "paragraph"
+    },
+    {
+      "title": "Vereinbarte Deliverables",
+      "instruction": "Deliverables, Verantwortliche und Fälligkeiten",
+      "format": "list",
+      "item_format": "| **Deliverable** | **Verantwortlich** | **Fällig bis** |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Kommerzielle Punkte",
+      "instruction": "Preise, SLAs, Zahlungsbedingungen oder Vertragsinhalte aus dem Gespräch",
+      "format": "paragraph"
+    },
+    {
+      "title": "Risiken & Bedenken",
+      "instruction": "Bedenken der Kundenseite, Blocker oder Eskalationsthemen",
+      "format": "list",
+      "item_format": "| **Bedenken** | **Auswirkung** | **Verantwortlich** |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Nächste Schritte",
+      "instruction": "Aktionen, Verantwortliche und Fälligkeiten",
+      "format": "list",
+      "item_format": "| **Verantwortlich** | **Aktion** | **Fällig bis** |\n| --- | --- | --- |"
     }
+  ]
+}

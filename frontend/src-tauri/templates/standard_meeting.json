@@ -1,26 +1,26 @@
 {
-  "name": "Standard Meeting Notes",
-  "description": "A standard template for general meetings, focusing on key outcomes and actions.",
+  "name": "Standard-Meeting Notizen",
+  "description": "Standardvorlage für allgemeine Meetings mit Fokus auf Ergebnisse und Maßnahmen.",
   "sections": [
     {
-      "title": "Summary",
-      "instruction": "Provide a brief, one-paragraph executive summary of the entire meeting.",
+      "title": "Zusammenfassung",
+      "instruction": "Eine kurze, prägnante Einleitung in einem Absatz zum gesamten Meeting.",
       "format": "paragraph"
     },
     {
-      "title": "Key Decisions",
-      "instruction": "List the most important decisions made during the meeting.",
+      "title": "Wichtige Entscheidungen",
+      "instruction": "Die wichtigsten im Meeting getroffenen Entscheidungen als Liste aufführen.",
       "format": "list"
     },
     {
-      "title": "Action Items",
-      "instruction": "List all assigned tasks with their owners and due date. Always add reference transcript segment and timestamp in the table.",
+      "title": "Aufgaben",
+      "instruction": "Alle Aufgaben mit Verantwortlichen und Fälligkeitsdatum. Immer das zugehörige Transkriptsegment und einen Zeitstempel angeben.",
       "format": "list",
-      "item_format": "| **Owner** | Task | Due | Reference Transcript Segment | Segment Time stamp |\n| --- | --- | --- | --- | --- |"
+      "item_format": "| **Verantwortlich** | Aufgabe | Fällig bis | Referenz-Transkript | Zeitstempel |\n| --- | --- | --- | --- | --- |"
     },
     {
-      "title": "Discussion Highlights",
-      "instruction": "Summarize the main topics of discussion, key arguments, and important insights.",
+      "title": "Diskussionspunkte",
+      "instruction": "Die wichtigsten Gesprächsthemen, Argumente und Erkenntnisse zusammenfassen.",
       "format": "paragraph"
     }
   ]

@@ -59,9 +59,10 @@ use tokio::sync::RwLock;
 
 static RECORDING_FLAG: AtomicBool = AtomicBool::new(false);
 
-// Global language preference storage (default to "auto-translate" for automatic translation to English)
+// Global language preference storage (default to German so we don't auto-translate to English)
 static LANGUAGE_PREFERENCE: std::sync::LazyLock<StdMutex<String>> =
-    std::sync::LazyLock::new(|| StdMutex::new("auto-translate".to_string()));
+    // Default to German transcription so recordings stay in the original language
+    std::sync::LazyLock::new(|| StdMutex::new("de".to_string()));
 
 #[derive(Debug, Deserialize)]
 struct RecordingArgs {

@@ -31,6 +31,8 @@ import { Copy, GlobeIcon, Settings } from 'lucide-react';
 import { MicrophoneIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { ButtonGroup } from '@/components/ui/button-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import MeetingDashboard from '@/components/MeetingDashboard';
 
 
 
@@ -59,10 +61,10 @@ export default function Home() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
   const [aiSummary, setAiSummary] = useState<Summary | null>({
-    key_points: { title: "Key Points", blocks: [] },
-    action_items: { title: "Action Items", blocks: [] },
-    decisions: { title: "Decisions", blocks: [] },
-    main_topics: { title: "Main Topics", blocks: [] }
+    key_points: { title: "Hauptpunkte", blocks: [] },
+    action_items: { title: "Aufgaben", blocks: [] },
+    decisions: { title: "Entscheidungen", blocks: [] },
+    main_topics: { title: "Hauptthemen", blocks: [] }
   });
   const [summaryResponse, setSummaryResponse] = useState<SummaryResponse | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -95,7 +97,7 @@ export default function Home() {
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [modelSelectorMessage, setModelSelectorMessage] = useState('');
   const [showLanguageSettings, setShowLanguageSettings] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('auto-translate');
+  const [selectedLanguage, setSelectedLanguage] = useState('de');
   const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
   const [showConfidenceIndicator, setShowConfidenceIndicator] = useState<boolean>(() => {
@@ -105,6 +107,7 @@ export default function Home() {
     }
     return true;
   });
+  const [activeTab, setActiveTab] = useState<'recording' | 'dashboard'>('recording');
 
   // Permission check hook
   const { hasMicrophone, hasSystemAudio, isChecking: isCheckingPermissions, checkPermissions } = usePermissionCheck();
@@ -1603,21 +1606,34 @@ export default function Home() {
           console.log('Loaded language preference:', language);
         }
       } catch (error) {
-        console.log('No language preference found or failed to load, using default (auto-translate):', error);
-        // Default to 'auto-translate' (Auto Detect with English translation) if no preference is saved
-        setSelectedLanguage('auto-translate');
+        console.log('No language preference found or failed to load, using default (German):', error);
+        // Default to German transcription if no preference is saved
+        setSelectedLanguage('de');
       }
     };
     loadLanguagePreference();
   }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+    <Tabs
+      value={activeTab}
+      onValueChange={(value) => setActiveTab(value as 'recording' | 'dashboard')}
       className="flex flex-col h-screen bg-gray-50"
     >
+      <div className="px-4 pt-4">
+        <TabsList>
+          <TabsTrigger value="recording">Recorder</TabsTrigger>
+          <TabsTrigger value="dashboard">Aufgaben-Dashboard</TabsTrigger>
+        </TabsList>
+      </div>
+
+      <TabsContent value="recording" className="flex-1">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className="flex flex-col h-full bg-gray-50"
+        >
       {showErrorAlert && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <Alert className="max-w-md mx-4 border-red-200 bg-white shadow-xl">
@@ -2275,6 +2291,12 @@ export default function Home() {
         {/*     </div> */}
         {/*   )} */}        {/* </div> */}
       </div>
-    </motion.div>
+        </motion.div>
+      </TabsContent>
+
+      <TabsContent value="dashboard" className="flex-1 overflow-hidden">
+        <MeetingDashboard />
+      </TabsContent>
+    </Tabs>
   );
 }

@@ -1,38 +1,38 @@
 {
-  "name": "Daily Standup",
-  "description": "Time-boxed daily updates for engineering/product teams.",
+  "name": "Tägliches Stand-up",
+  "description": "Zeitlich begrenzte tägliche Updates für Engineering- und Produktteams.",
   "sections": [
     {
-      "title": "Date",
-      "instruction": "YYYY-MM-DD",
+      "title": "Datum",
+      "instruction": "JJJJ-MM-TT",
       "format": "string"
     },
     {
-      "title": "Attendees",
-      "instruction": "List of participants present",
+      "title": "Teilnehmende",
+      "instruction": "Liste der anwesenden Personen",
       "format": "list"
     },
     {
-      "title": "Yesterday",
-      "instruction": "What I completed yesterday (short bullets)",
+      "title": "Gestern",
+      "instruction": "Was gestern erledigt wurde (kurze Bulletpoints)",
       "format": "list",
-      "example_item_format": "| **Owner** | **Completed Work** |\n| --- | --- |"
+      "example_item_format": "| **Verantwortlich** | **Erledigte Arbeit** |\n| --- | --- |"
     },
     {
-      "title": "Today",
-      "instruction": "Planned work for today (short bullets)",
+      "title": "Heute",
+      "instruction": "Geplante Arbeit für heute (kurze Bulletpoints)",
       "format": "list",
-      "example_item_format": "| **Owner** | **Planned Work** |\n| --- | --- |"
+      "example_item_format": "| **Verantwortlich** | **Geplante Arbeit** |\n| --- | --- |"
     },
     {
-      "title": "Blockers",
-      "instruction": "Any impediments and owner if known",
+      "title": "Blocker",
+      "instruction": "Hindernisse und Verantwortliche (falls bekannt)",
       "format": "list",
-      "item_format": "| **Owner** | **Blocker** | Impact |\n| --- | --- | --- |"
+      "item_format": "| **Verantwortlich** | **Blocker** | Auswirkung |\n| --- | --- | --- |"
     },
     {
-      "title": "Notes",
-      "instruction": "Optional quick notes or announcements",
+      "title": "Notizen",
+      "instruction": "Optionale kurze Notizen oder Ankündigungen",
       "format": "paragraph"
     }
   ]

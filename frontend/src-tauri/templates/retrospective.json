@@ -1,45 +1,45 @@
 {
-      "name": "Retrospective (Agile)",
-      "description": "Sprint retrospective template for continuous improvement.",
-      "sections": [
-        {
-          "title": "Sprint",
-          "instruction": "Sprint name/number and date range",
-          "format": "string"
-        },
-        {
-          "title": "Attendance",
-          "instruction": "List of participants",
-          "format": "list"
-        },
-        {
-          "title": "Start Doing",
-          "instruction": "Actions or experiments to start next sprint",
-          "format": "list",
-          "item_format": "| **Idea** | **Proposer** |\n| --- | --- |"
-        },
-        {
-          "title": "Stop Doing",
-          "instruction": "Practices to stop",
-          "format": "list",
-          "item_format": "| **Practice** | **Reason** |\n| --- | --- |"
-        },
-        {
-          "title": "Continue Doing",
-          "instruction": "Practices to continue",
-          "format": "list",
-          "item_format": "| **Practice** | **Notes** |\n| --- | --- |"
-        },
-        {
-          "title": "Action Items",
-          "instruction": "Concrete experiments with owners and success metrics",
-          "format": "list",
-          "item_format": "| **Owner** | **Task** | **Due Date** | **Success Metric** |\n| --- | --- | --- | --- |"
-        },
-        {
-          "title": "Notes & Votes",
-          "instruction": "Summary and top-voted items",
-          "format": "paragraph"
-        }
-      ]
+  "name": "Retrospektive (Agile)",
+  "description": "Sprint-Retrospektive für kontinuierliche Verbesserung.",
+  "sections": [
+    {
+      "title": "Sprint",
+      "instruction": "Sprintname/-nummer und Datumsbereich",
+      "format": "string"
+    },
+    {
+      "title": "Teilnehmende",
+      "instruction": "Liste der Teilnehmenden",
+      "format": "list"
+    },
+    {
+      "title": "Starten",
+      "instruction": "Aktionen oder Experimente, die im nächsten Sprint begonnen werden sollen",
+      "format": "list",
+      "item_format": "| **Idee** | **Vorschlag von** |\n| --- | --- |"
+    },
+    {
+      "title": "Stoppen",
+      "instruction": "Praktiken, die eingestellt werden sollen",
+      "format": "list",
+      "item_format": "| **Praxis** | **Begründung** |\n| --- | --- |"
+    },
+    {
+      "title": "Fortführen",
+      "instruction": "Praktiken, die fortgeführt werden sollen",
+      "format": "list",
+      "item_format": "| **Praxis** | **Notizen** |\n| --- | --- |"
+    },
+    {
+      "title": "Aufgaben",
+      "instruction": "Konkrete Experimente mit Verantwortlichen und Erfolgskriterien",
+      "format": "list",
+      "item_format": "| **Verantwortlich** | **Aufgabe** | **Fällig bis** | **Erfolgskriterium** |\n| --- | --- | --- | --- |"
+    },
+    {
+      "title": "Notizen & Abstimmungen",
+      "instruction": "Zusammenfassung und meistgewählte Punkte",
+      "format": "paragraph"
     }
+  ]
+}
