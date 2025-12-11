@@ -108,7 +108,8 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const fetchSettings = async () => {
         
-        setServerAddress('http://localhost:5167');
+        // Prefer explicit IPv4 loopback to match backend/Tauri config
+        setServerAddress('http://127.0.0.1:5167');
         setTranscriptServerAddress('http://127.0.0.1:8178/stream');
         
       

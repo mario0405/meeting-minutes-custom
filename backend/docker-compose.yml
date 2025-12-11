@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 
 # ⚠️  AUDIO PROCESSING WARNING:
 # Docker containers with insufficient resources will drop audio chunks when
@@ -108,7 +108,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 600s
     
     # Resource limits (optional)
     mem_limit: 4g

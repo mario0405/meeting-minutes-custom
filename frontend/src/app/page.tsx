@@ -75,8 +75,8 @@ export default function Home() {
     whisperModel: 'large-v3'
   });
   const [transcriptModelConfig, setTranscriptModelConfig] = useState<TranscriptModelProps>({
-    provider: 'parakeet',
-    model: 'parakeet-tdt-0.6b-v3-int8',
+    provider: 'localWhisper',
+    model: 'base.en',
     apiKey: null
   });
   const [originalTranscript, setOriginalTranscript] = useState<string>('');
@@ -657,7 +657,7 @@ export default function Home() {
   useEffect(() => {
     const loadModels = async () => {
       try {
-        const response = await fetch('http://localhost:11434/api/tags', {
+        const response = await fetch('http://127.0.0.1:11434/api/tags', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
