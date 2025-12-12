@@ -75,6 +75,15 @@ function extractTasksFromMarkdown(markdown: string, meetingId: string): Dashboar
         .map(col => col.trim())
         .filter(Boolean);
 
+      // Skip table header rows
+      const normalizedCols = cols
+        .map(col => col.replace(/\*/g, '').toLowerCase())
+        .map(col => col.replace(/\s+/g, ' ').trim());
+      const isHeaderRow =
+        normalizedCols.some(col => col.includes('verantwortlich')) &&
+        normalizedCols.some(col => col.includes('aufgabe') || col.includes('task'));
+      if (isHeaderRow) return;
+
       const description = cols[1] || cols[0];
       const due = cols[2];
 
