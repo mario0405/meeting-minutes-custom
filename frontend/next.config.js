@@ -8,6 +8,8 @@ const nextConfig = {
   // Add basePath configuration
   basePath: '',
   assetPrefix: '/',
+  // Allow cross-origin requests from WebView2 (Tauri desktop app)
+  allowedDevOrigins: ['http://localhost:3118', 'http://127.0.0.1:3118', 'tauri://localhost'],
 
   // Add webpack configuration for Tauri
   webpack: (config, { isServer }) => {
