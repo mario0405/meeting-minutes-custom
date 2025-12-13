@@ -11,9 +11,14 @@ export interface PermissionStatus {
 // Helper to check if running in Tauri
 const isTauri = () => typeof window !== 'undefined' && !!(window as any).__TAURI__;
 
+// Check if running on Windows
+const isWindowsOS = () => typeof navigator !== 'undefined' && navigator.userAgent.includes('Windows');
+
 export function usePermissionCheck() {
+  // On Windows, default to showing UI (hasMicrophone: true) while checking
+  // This prevents the UI from flickering or being hidden during permission check
   const [status, setStatus] = useState<PermissionStatus>({
-    hasMicrophone: false,
+    hasMicrophone: isWindowsOS(), // Default to true on Windows
     hasSystemAudio: false,
     isChecking: true,
     error: null,
@@ -40,7 +45,7 @@ export function usePermissionCheck() {
 
       // Check for microphone devices (Input)
       const inputDevices = devices.filter(d => d.device_type === 'Input');
-      const hasMicrophone = inputDevices.length > 0;
+      let hasMicrophone = inputDevices.length > 0;
 
       // Check for system audio devices (Output)
       // On macOS, we need ScreenCaptureKit devices for system audio
@@ -51,8 +56,17 @@ export function usePermissionCheck() {
         hasMicrophone,
         hasSystemAudio,
         inputDevices: inputDevices.length,
-        outputDevices: outputDevices.length
+        outputDevices: outputDevices.length,
+        allDevices: devices.length
       });
+
+      // On Windows, if no input devices are detected, default to allowing UI
+      // The actual recording will handle device selection with fallbacks
+      const isWindows = navigator.userAgent.includes('Windows');
+      if (isWindows && !hasMicrophone) {
+        console.warn('Windows: No input devices detected, defaulting to show UI');
+        hasMicrophone = true;
+      }
 
       setStatus({
         hasMicrophone,
