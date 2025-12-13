@@ -14,11 +14,11 @@ $ErrorActionPreference = "Continue"
 $Host.UI.RawUI.WindowTitle = "Meetily Dev Launcher"
 
 # Colors for output
-function Write-Step { param($msg) Write-Host "`n🚀 $msg" -ForegroundColor Cyan }
-function Write-Success { param($msg) Write-Host "✅ $msg" -ForegroundColor Green }
-function Write-Warning { param($msg) Write-Host "⚠️  $msg" -ForegroundColor Yellow }
-function Write-Error { param($msg) Write-Host "❌ $msg" -ForegroundColor Red }
-function Write-Info { param($msg) Write-Host "ℹ️  $msg" -ForegroundColor White }
+function Write-Step { param($msg) Write-Host "`n>>> $msg" -ForegroundColor Cyan }
+function Write-Success { param($msg) Write-Host "[OK] $msg" -ForegroundColor Green }
+function Write-Warn { param($msg) Write-Host "[WARN] $msg" -ForegroundColor Yellow }
+function Write-Err { param($msg) Write-Host "[ERROR] $msg" -ForegroundColor Red }
+function Write-Info { param($msg) Write-Host "[INFO] $msg" -ForegroundColor White }
 
 # Project paths
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -28,9 +28,9 @@ $WhisperServerPath = Join-Path $BackendDir "whisper.cpp\build\bin\Release\whispe
 $WhisperModelPath = Join-Path $BackendDir "whisper-server-package\models\ggml-small.bin"
 
 Write-Host "`n" 
-Write-Host "╔═══════════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║              🎙️  MEETILY DEVELOPMENT LAUNCHER  🎙️              ║" -ForegroundColor Magenta
-Write-Host "╚═══════════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+Write-Host "=================================================================" -ForegroundColor Magenta
+Write-Host "           MEETILY DEVELOPMENT LAUNCHER                         " -ForegroundColor Magenta
+Write-Host "=================================================================" -ForegroundColor Magenta
 Write-Host "`n"
 
 # ============================================================================
@@ -41,7 +41,7 @@ Write-Step "Checking prerequisites..."
 # Check Node.js
 $nodeVersion = node --version 2>$null
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Node.js is not installed. Please install Node.js first."
+    Write-Err "Node.js is not installed. Please install Node.js first."
     exit 1
 }
 Write-Success "Node.js: $nodeVersion"
@@ -49,7 +49,7 @@ Write-Success "Node.js: $nodeVersion"
 # Check pnpm
 $pnpmVersion = pnpm --version 2>$null
 if ($LASTEXITCODE -ne 0) {
-    Write-Warning "pnpm not found, installing..."
+    Write-Warn "pnpm not found, installing..."
     npm install -g pnpm
 }
 Write-Success "pnpm: $(pnpm --version)"
@@ -57,7 +57,7 @@ Write-Success "pnpm: $(pnpm --version)"
 # Check Rust
 $rustVersion = rustc --version 2>$null
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Rust is not installed. Please install Rust first: https://rustup.rs"
+    Write-Err "Rust is not installed. Please install Rust first: https://rustup.rs"
     exit 1
 }
 Write-Success "Rust: $rustVersion"
@@ -68,7 +68,7 @@ if (-not (Test-Path $pythonPath)) {
     # Try default python
     $pythonPath = (Get-Command python -ErrorAction SilentlyContinue).Source
     if (-not $pythonPath) {
-        Write-Error "Python not found. Please install Python 3.12+"
+        Write-Err "Python not found. Please install Python 3.12+"
         exit 1
     }
 }
@@ -112,13 +112,13 @@ Write-Success "Cleanup complete"
 Write-Step "Starting Whisper Server on port 8178..."
 
 if (-not (Test-Path $WhisperServerPath)) {
-    Write-Warning "Whisper server not found at: $WhisperServerPath"
+    Write-Warn "Whisper server not found at: $WhisperServerPath"
     Write-Info "Trying alternative location..."
     $WhisperServerPath = Join-Path $BackendDir "whisper-server-package\whisper-server.exe"
 }
 
 if (-not (Test-Path $WhisperModelPath)) {
-    Write-Warning "Whisper model not found at: $WhisperModelPath"
+    Write-Warn "Whisper model not found at: $WhisperModelPath"
     Write-Info "Trying alternative location..."
     $WhisperModelPath = Join-Path $BackendDir "models\ggml-small.bin"
 }
@@ -138,13 +138,13 @@ if (Test-Path $WhisperServerPath) {
         if ($whisperRunning.TcpTestSucceeded) {
             Write-Success "Whisper Server started on http://127.0.0.1:8178"
         } else {
-            Write-Warning "Whisper Server may still be starting..."
+            Write-Warn "Whisper Server may still be starting..."
         }
     } else {
-        Write-Warning "Whisper model not found. Transcription will use Tauri's built-in engine."
+        Write-Warn "Whisper model not found. Transcription will use Tauri's built-in engine."
     }
 } else {
-    Write-Warning "Whisper server executable not found. Transcription will use Tauri's built-in engine."
+    Write-Warn "Whisper server executable not found. Transcription will use Tauri's built-in engine."
 }
 
 # ============================================================================
@@ -172,13 +172,13 @@ Start-Sleep -Seconds 5
 
 # Verify backend started
 try {
-    $response = Invoke-WebRequest -Uri "http://127.0.0.1:5167/docs" -TimeoutSec 5 -ErrorAction SilentlyContinue
+    $response = Invoke-WebRequest -Uri "http://127.0.0.1:5167/docs" -TimeoutSec 5 -UseBasicParsing -ErrorAction SilentlyContinue
     if ($response.StatusCode -eq 200) {
         Write-Success "Python Backend started on http://127.0.0.1:5167"
         Write-Info "API docs available at http://127.0.0.1:5167/docs"
     }
 } catch {
-    Write-Warning "Python Backend may still be starting... Check logs if issues persist."
+    Write-Warn "Python Backend may still be starting... Check logs if issues persist."
 }
 
 # ============================================================================
@@ -195,14 +195,14 @@ if (-not (Test-Path (Join-Path $FrontendDir "node_modules"))) {
 }
 
 Write-Host "`n"
-Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Green
+Write-Host "=================================================================" -ForegroundColor Green
 Write-Success "All services starting! The Tauri app will open shortly..."
-Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Green
+Write-Host "=================================================================" -ForegroundColor Green
 Write-Host "`n"
 Write-Info "Services:"
-Write-Host "  • Whisper Server: http://127.0.0.1:8178" -ForegroundColor Cyan
-Write-Host "  • Python Backend: http://127.0.0.1:5167" -ForegroundColor Cyan
-Write-Host "  • Frontend Dev:   http://localhost:3118" -ForegroundColor Cyan
+Write-Host "  * Whisper Server: http://127.0.0.1:8178" -ForegroundColor Cyan
+Write-Host "  * Python Backend: http://127.0.0.1:5167" -ForegroundColor Cyan
+Write-Host "  * Frontend Dev:   http://localhost:3118" -ForegroundColor Cyan
 Write-Host "`n"
 Write-Info "Press Ctrl+C to stop all services"
 Write-Host "`n"
