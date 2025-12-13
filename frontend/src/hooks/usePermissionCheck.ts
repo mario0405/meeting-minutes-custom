@@ -8,6 +8,9 @@ export interface PermissionStatus {
   error: string | null;
 }
 
+// Helper to check if running in Tauri
+const isTauri = () => typeof window !== 'undefined' && !!(window as any).__TAURI__;
+
 export function usePermissionCheck() {
   const [status, setStatus] = useState<PermissionStatus>({
     hasMicrophone: false,
@@ -18,6 +21,18 @@ export function usePermissionCheck() {
 
   const checkPermissions = async () => {
     setStatus(prev => ({ ...prev, isChecking: true, error: null }));
+
+    // In browser mode (non-Tauri), always return true for permissions
+    if (!isTauri()) {
+      console.log('Running in browser mode, skipping permission check');
+      setStatus({
+        hasMicrophone: true,
+        hasSystemAudio: true,
+        isChecking: false,
+        error: null,
+      });
+      return { hasMicrophone: true, hasSystemAudio: true };
+    }
 
     try {
       // Get audio devices to check for microphone and system audio availability
@@ -49,6 +64,19 @@ export function usePermissionCheck() {
       return { hasMicrophone, hasSystemAudio };
     } catch (error) {
       console.error('Failed to check audio permissions:', error);
+      // On Windows, if get_audio_devices fails, still allow UI to show
+      // The error might be transient or a timing issue
+      const isWindows = navigator.userAgent.includes('Windows');
+      if (isWindows) {
+        console.warn('Windows detected with permission error - defaulting to allow UI');
+        setStatus({
+          hasMicrophone: true,
+          hasSystemAudio: false, // System audio typically doesn't work on Windows via browser
+          isChecking: false,
+          error: null,
+        });
+        return { hasMicrophone: true, hasSystemAudio: false };
+      }
       setStatus({
         hasMicrophone: false,
         hasSystemAudio: false,

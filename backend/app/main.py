@@ -6,10 +6,10 @@ import uvicorn
 from typing import Optional, List
 import logging
 from dotenv import load_dotenv
-from db import DatabaseManager
+from .db import DatabaseManager
 import json
 from threading import Lock
-from transcript_processor import TranscriptProcessor
+from .transcript_processor import TranscriptProcessor
 import time
 
 # Load environment variables
