@@ -30,8 +30,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const [showImportDialog, setShowImportDialog] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Ensure client-side only rendering to prevent hydration mismatch
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
+    if (!isMounted) return
+
     // Check first launch state immediately on mount (reliable)
     invoke<boolean>('check_first_launch')
       .then((isFirstLaunch) => {
@@ -61,7 +69,20 @@ export default function RootLayout({
       unlistenFirstLaunch.then((fn) => fn())
       unlistenDbInit.then((fn) => fn())
     }
-  }, [])
+  }, [isMounted])
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!isMounted) {
+    return (
+      <html lang="de">
+        <body className={`${sourceSans3.variable} font-sans`}>
+          <div className="flex h-screen items-center justify-center">
+            <div className="animate-pulse text-gray-400">Laden...</div>
+          </div>
+        </body>
+      </html>
+    )
+  }
 
   return (
     <html lang="de">
