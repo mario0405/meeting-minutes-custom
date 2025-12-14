@@ -24,7 +24,6 @@ import { VisuallyHidden } from "@/components/ui/visually-hidden"
 
 import { MessageToast } from '../MessageToast';
 import Logo from '../Logo';
-import Info from '../Info';
 import { ComplianceNotification } from '../ComplianceNotification';
 
 interface SidebarItem {
@@ -516,8 +515,6 @@ const Sidebar: React.FC = () => {
               <p>Einstellungen</p>
             </TooltipContent>
           </Tooltip>
-
-          <Info isCollapsed={isCollapsed} />
         </div>
       </TooltipProvider>
     );
@@ -671,7 +668,7 @@ const Sidebar: React.FC = () => {
             {!isCollapsed && (
               <div className="p-3">
                 {/* <span className="text-lg text-center border rounded-full bg-blue-50 border-white font-semibold text-gray-700 mb-2 block items-center">
-                  <span>Meetily</span>
+                  <span>Protocolito</span>
                 </span> */}
                 <Logo isCollapsed={isCollapsed} />
                 
@@ -782,7 +779,6 @@ const Sidebar: React.FC = () => {
                 <Settings className="w-4 h-4 mr-2" />
                 <span>Einstellungen</span>
               </button>
-              <Info isCollapsed={isCollapsed} />
               <div className="w-full flex items-center justify-center px-3 py-1 text-xs text-gray-400">
               v0.1.1 - Vorabversion
             </div>

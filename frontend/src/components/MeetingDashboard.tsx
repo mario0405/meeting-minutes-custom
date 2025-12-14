@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { AlertCircle, CheckCircle2, Clock, ListChecks, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Circle, Clock, ListChecks, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 
 type DashboardTask = {
@@ -18,6 +18,9 @@ type DashboardMeeting = {
   summaryStatus: string;
   tasks: DashboardTask[];
 };
+
+// Storage key for completed tasks
+const COMPLETED_TASKS_KEY = 'protocolito-completed-tasks';
 
 const ACTION_SECTION_TITLES = [
   'Aufgaben',
@@ -137,6 +140,47 @@ const MeetingDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
+
+  // Load completed tasks from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(COMPLETED_TASKS_KEY);
+      if (stored) {
+        setCompletedTasks(new Set(JSON.parse(stored)));
+      }
+    } catch (err) {
+      console.error('Failed to load completed tasks from localStorage:', err);
+    }
+  }, []);
+
+  // Save completed tasks to localStorage whenever they change
+  const saveCompletedTasks = useCallback((tasks: Set<string>) => {
+    try {
+      localStorage.setItem(COMPLETED_TASKS_KEY, JSON.stringify([...tasks]));
+    } catch (err) {
+      console.error('Failed to save completed tasks to localStorage:', err);
+    }
+  }, []);
+
+  // Toggle task completion status
+  const toggleTaskCompletion = useCallback((taskId: string) => {
+    setCompletedTasks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId);
+      } else {
+        newSet.add(taskId);
+      }
+      saveCompletedTasks(newSet);
+      return newSet;
+    });
+  }, [saveCompletedTasks]);
+
+  // Check if a task is completed (either from markdown or manually toggled)
+  const isTaskCompleted = useCallback((task: DashboardTask) => {
+    return completedTasks.has(task.id) || task.status === 'Erledigt';
+  }, [completedTasks]);
 
   const loadData = async () => {
     setLoading(true);
@@ -189,6 +233,18 @@ const MeetingDashboard: React.FC = () => {
     [meetings]
   );
 
+  const completedTasksCount = useMemo(() => {
+    let count = 0;
+    meetings.forEach(meeting => {
+      meeting.tasks.forEach(task => {
+        if (completedTasks.has(task.id) || task.status === 'Erledigt') {
+          count++;
+        }
+      });
+    });
+    return count;
+  }, [meetings, completedTasks]);
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center text-gray-600">
@@ -209,8 +265,8 @@ const MeetingDashboard: React.FC = () => {
         </div>
         <div className="flex items-center gap-3">
           <div className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700">
-            <ListChecks className="mr-1 inline h-4 w-4" />
-            {totalTasks} Aufgaben
+            <CheckCircle2 className="mr-1 inline h-4 w-4 text-green-600" />
+            {completedTasksCount}/{totalTasks} erledigt
           </div>
           <Button
             variant="outline"
@@ -252,7 +308,9 @@ const MeetingDashboard: React.FC = () => {
 
               <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
                 <Clock className="h-4 w-4" />
-                {meeting.tasks.length > 0 ? `${meeting.tasks.length} erkannte Aufgaben` : 'Keine Aufgaben gefunden'}
+                {meeting.tasks.length > 0 
+                  ? `${meeting.tasks.filter(t => isTaskCompleted(t)).length}/${meeting.tasks.length} Aufgaben erledigt` 
+                  : 'Keine Aufgaben gefunden'}
               </div>
 
               <div className="mt-4 space-y-2">
@@ -261,37 +319,52 @@ const MeetingDashboard: React.FC = () => {
                     Noch keine Aufgaben im Protokoll gefunden.
                   </div>
                 ) : (
-                  meeting.tasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-start justify-between rounded-md border border-gray-100 bg-gray-50 px-3 py-2"
-                    >
-                      <div className="flex items-start gap-2">
-                        {task.status === 'Erledigt' ? (
-                          <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-600" />
-                        ) : (
-                          <ListChecks className="mt-0.5 h-4 w-4 text-amber-600" />
-                        )}
-                        <div>
-                          <p className="text-sm text-gray-900">{task.description}</p>
-                          {task.due && (
-                            <p className="text-xs text-gray-600">
-                              Fällig bis: <span className="font-medium">{task.due}</span>
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <span
-                        className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
-                          task.status === 'Erledigt'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-amber-100 text-amber-700'
+                  meeting.tasks.map((task) => {
+                    const completed = isTaskCompleted(task);
+                    return (
+                      <div
+                        key={task.id}
+                        className={`flex items-start justify-between rounded-md border px-3 py-2 transition-colors ${
+                          completed
+                            ? 'border-green-100 bg-green-50/50'
+                            : 'border-gray-100 bg-gray-50'
                         }`}
                       >
-                        {task.status}
-                      </span>
-                    </div>
-                  ))
+                        <div className="flex items-start gap-2">
+                          <button
+                            onClick={() => toggleTaskCompletion(task.id)}
+                            className="mt-0.5 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-full transition-transform hover:scale-110"
+                            title={completed ? 'Als offen markieren' : 'Als erledigt markieren'}
+                          >
+                            {completed ? (
+                              <CheckCircle2 className="h-5 w-5 text-green-600 cursor-pointer" />
+                            ) : (
+                              <Circle className="h-5 w-5 text-gray-400 hover:text-gray-600 cursor-pointer" />
+                            )}
+                          </button>
+                          <div>
+                            <p className={`text-sm ${completed ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
+                              {task.description}
+                            </p>
+                            {task.due && (
+                              <p className="text-xs text-gray-600">
+                                Fällig bis: <span className="font-medium">{task.due}</span>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <span
+                          className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
+                            completed
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {completed ? 'Erledigt' : 'Offen'}
+                        </span>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>

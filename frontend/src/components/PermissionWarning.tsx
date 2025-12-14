@@ -90,7 +90,7 @@ export function PermissionWarning({
             {!hasMicrophone && (
               <>
                 <p className="mb-3">
-                  Meetily benötigt Zugriff auf dein Mikrofon, um Meetings aufzunehmen. Es wurden keine Mikrofon-Geräte erkannt.
+                  Protocolito benötigt Zugriff auf dein Mikrofon, um Meetings aufzunehmen. Es wurden keine Mikrofon-Geräte erkannt.
                 </p>
                 <div className="space-y-2 text-sm mb-4">
                   <p className="font-medium">Bitte prüfen:</p>
@@ -116,7 +116,7 @@ export function PermissionWarning({
                     <p className="font-medium">So aktivierst du Systemaudio unter macOS:</p>
                     <ul className="list-disc list-inside ml-2 space-y-1">
                       <li>Installiere ein virtuelles Audiogerät (z. B. BlackHole 2ch)</li>
-                      <li>Erteile Meetily die Berechtigung für Bildschirmaufnahme</li>
+                      <li>Erteile Protocolito die Berechtigung für Bildschirmaufnahme</li>
                       <li>Konfiguriere das Audio-Routing im Audio-MIDI-Setup</li>
                     </ul>
                   </div>

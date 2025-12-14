@@ -122,7 +122,7 @@ export default function AnalyticsConsentSwitch() {
         <div>
           <h3 className="text-base font-semibold text-gray-800 mb-2">Nutzungsstatistiken</h3>
           <p className="text-sm text-gray-600 mb-4">
-            Hilf uns, Meetily zu verbessern, indem du anonyme Nutzungsdaten teilst. Es werden keine persönlichen Inhalte erfasst – alles bleibt auf deinem Gerät.
+            Hilf uns, Protocolito zu verbessern, indem du anonyme Nutzungsdaten teilst. Es werden keine persönlichen Inhalte erfasst – alles bleibt auf deinem Gerät.
           </p>
         </div>
 

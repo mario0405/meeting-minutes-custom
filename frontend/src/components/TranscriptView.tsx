@@ -370,7 +370,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({ transcripts, isR
             </>
           ) : (
             <>
-              <p className="text-lg font-semibold">Willkommen bei Meetily!</p>
+              <p className="text-lg font-semibold">Willkommen bei Protocolito!</p>
               <p className="text-xs mt-1">Starte eine Aufnahme, um die Live-Transkription zu sehen</p>
             </>
           )}

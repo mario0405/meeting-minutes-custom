@@ -97,11 +97,11 @@ export function HomebrewDatabaseDetector({ onImportSuccess, onDecline }: Homebre
           <div className="flex items-center gap-2 mb-1">
             <AlertCircle className="h-4 w-4 text-blue-600" />
             <h3 className="text-sm font-semibold text-blue-900">
-              Frühere Meetily-Installation erkannt!
+              Frühere Protocolito-Installation erkannt!
             </h3>
           </div>
           <p className="text-sm text-blue-800 mb-2">
-            Wir haben eine bestehende Datenbank deiner früheren Meetily-Installation (Python-Backend-Version) gefunden.
+            Wir haben eine bestehende Datenbank deiner früheren Protocolito-Installation (Python-Backend-Version) gefunden.
           </p>
           <div className="bg-white/50 rounded p-2 mb-3">
             <p className="text-xs text-blue-700 font-mono break-all">

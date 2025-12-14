@@ -42,7 +42,7 @@ export function LegacyDatabaseImport({ isOpen, onComplete }: LegacyDatabaseImpor
         setDetectedPath(dbPath);
         setImportState('idle');
       } else {
-        setErrorMessage('Keine Datenbank am ausgewählten Ort gefunden. Bitte wähle den Meetily-Ordner, den Backend-Ordner oder die Datenbankdatei direkt aus.');
+        setErrorMessage('Keine Datenbank am ausgewählten Ort gefunden. Bitte wähle den Protocolito-Ordner, den Backend-Ordner oder die Datenbankdatei direkt aus.');
         setDetectedPath(null);
         setImportState('error');
         setTimeout(() => setImportState('idle'), 3000);
@@ -119,9 +119,9 @@ export function LegacyDatabaseImport({ isOpen, onComplete }: LegacyDatabaseImpor
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent className="sm:max-w-[600px]" onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle className="text-2xl">Willkommen bei Meetily!</DialogTitle>
+          <DialogTitle className="text-2xl">Willkommen bei Protocolito!</DialogTitle>
           <DialogDescription className="text-base pt-2">
-            Hast du Daten aus einer früheren Meetily-Installation?
+            Hast du Daten aus einer früheren Protocolito-Installation?
           </DialogDescription>
         </DialogHeader>
 
@@ -135,7 +135,7 @@ export function LegacyDatabaseImport({ isOpen, onComplete }: LegacyDatabaseImpor
           {/* Browse Section */}
           <div className="space-y-3">
             <p className="text-sm text-gray-600">
-              Wähle deinen früheren Meetily-Ordner, den Backend-Ordner oder die Datenbankdatei aus:
+              Wähle deinen früheren Protocolito-Ordner, den Backend-Ordner oder die Datenbankdatei aus:
             </p>
 
             <button
