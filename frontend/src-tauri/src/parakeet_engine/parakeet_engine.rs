@@ -56,12 +56,12 @@ pub enum ParakeetEngineError {
 impl std::fmt::Display for ParakeetEngineError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ParakeetEngineError::ModelNotLoaded => write!(f, "No Parakeet model loaded"),
-            ParakeetEngineError::ModelNotFound(name) => write!(f, "Model '{}' not found", name),
-            ParakeetEngineError::TranscriptionFailed(err) => write!(f, "Transcription failed: {}", err),
-            ParakeetEngineError::DownloadFailed(err) => write!(f, "Download failed: {}", err),
-            ParakeetEngineError::IoError(err) => write!(f, "IO error: {}", err),
-            ParakeetEngineError::Other(err) => write!(f, "Error: {}", err),
+            ParakeetEngineError::ModelNotLoaded => write!(f, "Kein Parakeet-Modell geladen"),
+            ParakeetEngineError::ModelNotFound(name) => write!(f, "Modell '{}' nicht gefunden", name),
+            ParakeetEngineError::TranscriptionFailed(err) => write!(f, "Transkription fehlgeschlagen: {}", err),
+            ParakeetEngineError::DownloadFailed(err) => write!(f, "Download fehlgeschlagen: {}", err),
+            ParakeetEngineError::IoError(err) => write!(f, "I/O-Fehler: {}", err),
+            ParakeetEngineError::Other(err) => write!(f, "Fehler: {}", err),
         }
     }
 }
@@ -92,7 +92,7 @@ impl ParakeetEngine {
         } else {
             // Fallback to default location
             let current_dir = std::env::current_dir()
-                .map_err(|e| anyhow!("Failed to get current directory: {}", e))?;
+                .map_err(|e| anyhow!("Aktuelles Verzeichnis konnte nicht ermittelt werden: {}", e))?;
 
             if cfg!(debug_assertions) {
                 // Development mode
@@ -101,7 +101,7 @@ impl ParakeetEngine {
                 // Production mode
                 dirs::data_dir()
                     .or_else(|| dirs::home_dir())
-                    .ok_or_else(|| anyhow!("Could not find system data directory"))?
+                    .ok_or_else(|| anyhow!("Systemdatenverzeichnis konnte nicht gefunden werden"))?
                     .join("Meetily")
                     .join("models")
                     .join("parakeet")
@@ -218,7 +218,7 @@ impl ParakeetEngine {
         // Check if vocab.txt exists and is readable
         let vocab_path = model_dir.join("vocab.txt");
         if !vocab_path.exists() {
-            return Err(anyhow!("vocab.txt not found"));
+            return Err(anyhow!("vocab.txt nicht gefunden"));
         }
 
         // Check if ONNX files exist (either int8 or fp32)
@@ -228,12 +228,12 @@ impl ParakeetEngine {
             && model_dir.join("decoder_joint-model.onnx").exists();
 
         if !has_int8 && !has_fp32 {
-            return Err(anyhow!("No ONNX model files found"));
+            return Err(anyhow!("Keine ONNX-Modelldateien gefunden"));
         }
 
         // Check preprocessor
         if !model_dir.join("nemo128.onnx").exists() {
-            return Err(anyhow!("Preprocessor (nemo128.onnx) not found"));
+            return Err(anyhow!("Preprocessor (nemo128.onnx) nicht gefunden"));
         }
 
         Ok(())
@@ -244,7 +244,7 @@ impl ParakeetEngine {
         let models = self.available_models.read().await;
         let model_info = models
             .get(model_name)
-            .ok_or_else(|| anyhow!("Model {} not found", model_name))?;
+            .ok_or_else(|| anyhow!("Modell {} nicht gefunden", model_name))?;
 
         match model_info.status {
             ModelStatus::Available => {
@@ -265,7 +265,7 @@ impl ParakeetEngine {
                 // Load model based on quantization type
                 let quantized = model_info.quantization == QuantizationType::Int8;
                 let model = ParakeetModel::new(&model_info.path, quantized)
-                    .map_err(|e| anyhow!("Failed to load Parakeet model {}: {}", model_name, e))?;
+                    .map_err(|e| anyhow!("Parakeet-Modell {} konnte nicht geladen werden: {}", model_name, e))?;
 
                 // Update current model and model name
                 *self.current_model.write().await = Some(model);
@@ -279,16 +279,16 @@ impl ParakeetEngine {
                 Ok(())
             }
             ModelStatus::Missing => {
-                Err(anyhow!("Parakeet model {} is not downloaded", model_name))
+                Err(anyhow!("Parakeet-Modell {} ist nicht heruntergeladen", model_name))
             }
             ModelStatus::Downloading { .. } => {
-                Err(anyhow!("Parakeet model {} is currently downloading", model_name))
+                Err(anyhow!("Parakeet-Modell {} wird gerade heruntergeladen", model_name))
             }
             ModelStatus::Error(ref err) => {
-                Err(anyhow!("Parakeet model {} has error: {}", model_name, err))
+                Err(anyhow!("Parakeet-Modell {} hat einen Fehler: {}", model_name, err))
             }
             ModelStatus::Corrupted { .. } => {
-                Err(anyhow!("Parakeet model {} is corrupted and cannot be loaded", model_name))
+                Err(anyhow!("Parakeet-Modell {} ist beschädigt und kann nicht geladen werden", model_name))
             }
         }
     }
@@ -322,7 +322,7 @@ impl ParakeetEngine {
         let mut model_guard = self.current_model.write().await;
         let model = model_guard
             .as_mut()
-            .ok_or_else(|| anyhow!("No Parakeet model loaded. Please load a model first."))?;
+            .ok_or_else(|| anyhow!("Kein Parakeet-Modell geladen. Bitte lade zuerst ein Modell."))?;
 
         let duration_seconds = audio_data.len() as f64 / 16000.0; // Assuming 16kHz
         log::debug!(
@@ -334,7 +334,7 @@ impl ParakeetEngine {
         // Transcribe using Parakeet model
         let result = model
             .transcribe_samples(audio_data)
-            .map_err(|e| anyhow!("Parakeet transcription failed: {}", e))?;
+            .map_err(|e| anyhow!("Parakeet-Transkription fehlgeschlagen: {}", e))?;
 
         log::debug!("Parakeet transcription result: '{}'", result.text);
 
@@ -356,7 +356,8 @@ impl ParakeetEngine {
             models.get(model_name).cloned()
         };
 
-        let model_info = model_info.ok_or_else(|| anyhow!("Parakeet model '{}' not found", model_name))?;
+        let model_info = model_info
+            .ok_or_else(|| anyhow!("Parakeet-Modell '{}' nicht gefunden", model_name))?;
 
         log::info!("Parakeet model '{}' has status: {:?}", model_name, model_info.status);
 
@@ -366,7 +367,7 @@ impl ParakeetEngine {
                 // Delete the entire model directory
                 if model_info.path.exists() {
                     fs::remove_dir_all(&model_info.path).await
-                        .map_err(|e| anyhow!("Failed to delete directory '{}': {}", model_info.path.display(), e))?;
+                        .map_err(|e| anyhow!("Verzeichnis '{}' konnte nicht gelöscht werden: {}", model_info.path.display(), e))?;
                     log::info!("Successfully deleted Parakeet model directory: {}", model_info.path.display());
                 } else {
                     log::warn!("Directory '{}' does not exist, nothing to delete", model_info.path.display());
@@ -380,11 +381,11 @@ impl ParakeetEngine {
                     }
                 }
 
-                Ok(format!("Successfully deleted Parakeet model '{}'", model_name))
+                Ok(format!("Parakeet-Modell '{}' erfolgreich gelöscht", model_name))
             }
             _ => {
                 Err(anyhow!(
-                    "Can only delete corrupted or available Parakeet models. Model '{}' has status: {:?}",
+                    "Es können nur beschädigte oder verfügbare Parakeet-Modelle gelöscht werden. Modell '{}' hat Status: {:?}",
                     model_name,
                     model_info.status
                 ))
@@ -405,7 +406,7 @@ impl ParakeetEngine {
             let active = self.active_downloads.read().await;
             if active.contains(model_name) {
                 log::warn!("Download already in progress for Parakeet model: {}", model_name);
-                return Err(anyhow!("Download already in progress for model: {}", model_name));
+                return Err(anyhow!("Download läuft bereits für Modell: {}", model_name));
             }
         }
 
@@ -430,7 +431,7 @@ impl ParakeetEngine {
                     // Remove from active downloads on error
                     let mut active = self.active_downloads.write().await;
                     active.remove(model_name);
-                    return Err(anyhow!("Model {} not found", model_name));
+                    return Err(anyhow!("Modell {} nicht gefunden", model_name));
                 }
             }
         };
@@ -474,7 +475,7 @@ impl ParakeetEngine {
                 // Remove from active downloads on error
                 let mut active = self.active_downloads.write().await;
                 active.remove(model_name);
-                return Err(anyhow!("Failed to create model directory: {}", e));
+                return Err(anyhow!("Modellverzeichnis konnte nicht erstellt werden: {}", e));
             }
         }
 
@@ -540,14 +541,18 @@ impl ParakeetEngine {
             let response = client.get(&file_url).send().await
                 .map_err(|e| {
                     // Note: cleanup will happen at function end via drop or explicit cleanup
-                    anyhow!("Failed to start download for {}: {}", filename, e)
+                    anyhow!("Download für {} konnte nicht gestartet werden: {}", filename, e)
                 })?;
 
             if !response.status().is_success() {
                 // Remove from active downloads on error
                 let mut active = self.active_downloads.write().await;
                 active.remove(model_name);
-                return Err(anyhow!("Download failed for {} with status: {}", filename, response.status()));
+                return Err(anyhow!(
+                    "Download für {} fehlgeschlagen (Status: {})",
+                    filename,
+                    response.status()
+                ));
             }
 
             let total_size = response.content_length().unwrap_or(0);
@@ -557,7 +562,7 @@ impl ParakeetEngine {
                     // Remove from active downloads on error
                     let mut active = self.active_downloads.write().await;
                     active.remove(model_name);
-                    return Err(anyhow!("Failed to create file {}: {}", filename, e));
+                    return Err(anyhow!("Datei {} konnte nicht erstellt werden: {}", filename, e));
                 }
             };
 
@@ -577,7 +582,7 @@ impl ParakeetEngine {
                         // Remove from active downloads on cancellation
                         let mut active = self.active_downloads.write().await;
                         active.remove(model_name);
-                        return Err(anyhow!("Download cancelled by user"));
+                        return Err(anyhow!("Download vom Nutzer abgebrochen"));
                     }
                 }
 
@@ -587,7 +592,7 @@ impl ParakeetEngine {
                         // Remove from active downloads on error
                         let mut active = self.active_downloads.write().await;
                         active.remove(model_name);
-                        return Err(anyhow!("Failed to read chunk: {}", e));
+                        return Err(anyhow!("Chunk konnte nicht gelesen werden: {}", e));
                     }
                 };
 
@@ -595,7 +600,7 @@ impl ParakeetEngine {
                     // Remove from active downloads on error
                     let mut active = self.active_downloads.write().await;
                     active.remove(model_name);
-                    return Err(anyhow!("Failed to write chunk to file: {}", e));
+                    return Err(anyhow!("Chunk konnte nicht in Datei geschrieben werden: {}", e));
                 }
 
                 downloaded += chunk.len() as u64;
@@ -641,7 +646,7 @@ impl ParakeetEngine {
                 // Remove from active downloads on error
                 let mut active = self.active_downloads.write().await;
                 active.remove(model_name);
-                return Err(anyhow!("Failed to flush file {}: {}", filename, e));
+                return Err(anyhow!("Datei {} konnte nicht geflusht werden: {}", filename, e));
             }
 
             log::info!(

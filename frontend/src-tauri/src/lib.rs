@@ -596,6 +596,7 @@ pub fn run() {
             api::api_delete_meeting,
             api::api_get_meeting,
             api::api_save_meeting_title,
+            api::api_save_meeting_summary_prompt,
             api::api_save_transcript,
             api::open_meeting_folder,
             api::test_backend_connection,

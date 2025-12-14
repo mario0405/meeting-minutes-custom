@@ -39,15 +39,15 @@ export function useSummaryGeneration({
   const getSummaryStatusMessage = useCallback((status: SummaryStatus) => {
     switch (status) {
       case 'processing':
-        return 'Processing transcript...';
+        return 'Transkript wird verarbeitet…';
       case 'summarizing':
-        return 'Generating summary...';
+        return 'Zusammenfassung wird erstellt…';
       case 'regenerating':
-        return 'Regenerating summary...';
+        return 'Zusammenfassung wird neu erstellt…';
       case 'completed':
-        return 'Summary completed';
+        return 'Zusammenfassung fertig';
       case 'error':
-        return 'Error generating summary';
+        return 'Fehler beim Erstellen der Zusammenfassung';
       default:
         return '';
     }
@@ -68,7 +68,7 @@ export function useSummaryGeneration({
 
     try {
       if (!transcriptText.trim()) {
-        throw new Error('No transcript text available. Please add some text first.');
+        throw new Error('Kein Transkripttext verfügbar. Bitte füge zuerst Text hinzu.');
       }
 
       if (!isRegeneration) {
@@ -115,13 +115,15 @@ export function useSummaryGeneration({
         // Handle errors
         if (pollingResult.status === 'error' || pollingResult.status === 'failed') {
           console.error('Backend returned error:', pollingResult.error);
-          const errorMessage = pollingResult.error || `Summary ${isRegeneration ? 'regeneration' : 'generation'} failed`;
+          const errorMessage =
+            pollingResult.error ||
+            `Zusammenfassung ${isRegeneration ? 'konnte nicht neu erstellt' : 'konnte nicht erstellt'} werden`;
           setSummaryError(errorMessage);
           setSummaryStatus('error');
 
-          toast.error(`Failed to ${isRegeneration ? 'regenerate' : 'generate'} summary`, {
+          toast.error(`Zusammenfassung ${isRegeneration ? 'konnte nicht neu erstellt' : 'konnte nicht erstellt'} werden`, {
             description: errorMessage.includes('Connection refused')
-              ? 'Could not connect to LLM service. Please ensure Ollama or your configured LLM provider is running.'
+              ? 'Keine Verbindung zum LLM-Dienst. Bitte stelle sicher, dass Ollama oder dein konfigurierter LLM-Anbieter läuft.'
               : errorMessage,
           });
 
@@ -169,7 +171,7 @@ export function useSummaryGeneration({
 
           if (allEmpty) {
             console.error('Summary completed but all sections empty');
-            setSummaryError('Summary generation completed but returned empty content.');
+            setSummaryError('Die Zusammenfassung wurde erstellt, enthält aber keinen Inhalt.');
             setSummaryStatus('error');
 
             await Analytics.trackSummaryGenerationCompleted(
@@ -177,7 +179,7 @@ export function useSummaryGeneration({
               modelConfig.model,
               false,
               undefined,
-              'Empty summary generated'
+              'Leere Zusammenfassung erstellt'
             );
             return;
           }
@@ -232,14 +234,14 @@ export function useSummaryGeneration({
       });
     } catch (error) {
       console.error(`Failed to ${isRegeneration ? 'regenerate' : 'generate'} summary:`, error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
       setSummaryError(errorMessage);
       setSummaryStatus('error');
       if (isRegeneration) {
         setAiSummary(null);
       }
 
-      toast.error(`Failed to ${isRegeneration ? 'regenerate' : 'generate'} summary`, {
+      toast.error(`Zusammenfassung ${isRegeneration ? 'konnte nicht neu erstellt' : 'konnte nicht erstellt'} werden`, {
         description: errorMessage,
       });
 
@@ -267,12 +269,12 @@ export function useSummaryGeneration({
     // Check if model config is still loading
     if (isModelConfigLoading) {
       console.log('⏳ Model configuration is still loading, please wait...');
-      toast.info('Loading model configuration, please wait...');
+      toast.info('Modellkonfiguration wird geladen, bitte warten…');
       return;
     }
 
     if (!transcripts.length) {
-      const error_msg = 'No transcripts available for summary';
+      const error_msg = 'Keine Transkripte für die Zusammenfassung vorhanden';
       console.log(error_msg);
       toast.error(error_msg);
       return;
@@ -292,7 +294,7 @@ export function useSummaryGeneration({
 
         if (!models || models.length === 0) {
           toast.error(
-            'No Ollama models found. Please download gemma3:1b from Model Settings.',
+            'Keine Ollama-Modelle gefunden. Bitte lade ein Modell (z. B. gemma3:1b) in den Modell-Einstellungen herunter.',
             { duration: 5000 }
           );
           return;
@@ -300,7 +302,7 @@ export function useSummaryGeneration({
       } catch (error) {
         console.error('Error checking Ollama models:', error);
         toast.error(
-          'Failed to check Ollama models. Please ensure Ollama is running and download a model from Settings.',
+          'Ollama-Modelle konnten nicht geprüft werden. Bitte stelle sicher, dass Ollama läuft, und lade ein Modell in den Einstellungen herunter.',
           { duration: 5000 }
         );
         return;
@@ -312,7 +314,7 @@ export function useSummaryGeneration({
   }, [transcripts, processSummary, modelConfig, isModelConfigLoading, selectedTemplate]);
 
   // Public API: Regenerate summary from original transcript
-  const handleRegenerateSummary = useCallback(async () => {
+  const handleRegenerateSummary = useCallback(async (customPrompt: string = '') => {
     if (!originalTranscript.trim()) {
       console.error('No original transcript available for regeneration');
       return;
@@ -320,6 +322,7 @@ export function useSummaryGeneration({
 
     await processSummary({
       transcriptText: originalTranscript,
+      customPrompt,
       isRegeneration: true
     });
   }, [originalTranscript, processSummary]);

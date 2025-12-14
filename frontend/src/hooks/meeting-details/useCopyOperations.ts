@@ -34,14 +34,14 @@ export function useCopyOperations({
       return `[${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}]`;
     };
 
-    const header = `# Transcript of the Meeting: ${meeting.id} - ${meetingTitle ?? meeting.title}\n\n`;
-    const date = `## Date: ${new Date(meeting.created_at).toLocaleDateString()}\n\n`;
+    const header = `# Transkript des Meetings: ${meeting.id} - ${meetingTitle ?? meeting.title}\n\n`;
+    const date = `## Datum: ${new Date(meeting.created_at).toLocaleDateString('de-DE')}\n\n`;
     const fullTranscript = transcripts
       .map(t => `${formatTime(t.audio_start_time, t.timestamp)} ${t.text}`)
       .join('\n');
 
     await navigator.clipboard.writeText(header + date + fullTranscript);
-    toast.success("Transcript copied to clipboard");
+    toast.success("Transkript in die Zwischenablage kopiert");
 
     // Track copy analytics
     const wordCount = transcripts
@@ -103,19 +103,19 @@ export function useCopyOperations({
       // If still no summary content, show message
       if (!summaryMarkdown.trim()) {
         console.error('❌ No summary content available to copy');
-        toast.error('No summary content available to copy');
+        toast.error('Kein Inhalt zum Kopieren verfügbar');
         return;
       }
 
       // Build metadata header
-      const header = `# Meeting Summary: ${meetingTitle}\n\n`;
-      const metadata = `**Meeting ID:** ${meeting.id}\n**Date:** ${new Date(meeting.created_at).toLocaleDateString('en-US', {
+      const header = `# Meeting-Zusammenfassung: ${meetingTitle}\n\n`;
+      const metadata = `**Meeting-ID:** ${meeting.id}\n**Datum:** ${new Date(meeting.created_at).toLocaleDateString('de-DE', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-      })}\n**Copied on:** ${new Date().toLocaleDateString('en-US', {
+      })}\n**Kopiert am:** ${new Date().toLocaleDateString('de-DE', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -127,7 +127,7 @@ export function useCopyOperations({
       await navigator.clipboard.writeText(fullMarkdown);
 
       console.log('✅ Successfully copied to clipboard!');
-      toast.success("Summary copied to clipboard");
+      toast.success("Zusammenfassung in die Zwischenablage kopiert");
 
       // Track copy analytics
       await Analytics.trackCopy('summary', {
@@ -136,7 +136,7 @@ export function useCopyOperations({
       });
     } catch (error) {
       console.error('❌ Failed to copy summary:', error);
-      toast.error("Failed to copy summary");
+      toast.error("Zusammenfassung konnte nicht kopiert werden");
     }
   }, [aiSummary, meetingTitle, meeting, blockNoteSummaryRef]);
 

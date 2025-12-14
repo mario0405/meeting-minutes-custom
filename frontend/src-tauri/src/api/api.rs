@@ -121,6 +121,8 @@ pub struct MeetingDetails {
     pub title: String,
     pub created_at: String,
     pub updated_at: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub summary_prompt: Option<String>,
     pub transcripts: Vec<MeetingTranscript>,
 }
 
@@ -807,6 +809,32 @@ pub async fn api_save_meeting_title<R: Runtime>(
             log_error!("Failed to update meeting {}", e);
             Err(format!("Failed to update meeting: {}", e))
         }
+    }
+}
+
+#[tauri::command]
+pub async fn api_save_meeting_summary_prompt<R: Runtime>(
+    _app: AppHandle<R>,
+    state: tauri::State<'_, AppState>,
+    meeting_id: String,
+    summary_prompt: String,
+    auth_token: Option<String>,
+) -> Result<serde_json::Value, String> {
+    log_info!(
+        "api_save_meeting_summary_prompt called for meeting_id: {}, auth_token: {}",
+        meeting_id,
+        auth_token.is_some()
+    );
+
+    let pool = state.db_manager.pool();
+
+    match MeetingsRepository::update_meeting_summary_prompt(pool, &meeting_id, &summary_prompt).await
+    {
+        Ok(true) => Ok(serde_json::json!({
+            "message": "KI-Anweisungen für dieses Meeting gespeichert"
+        })),
+        Ok(false) => Err(format!("Kein Meeting mit der ID {} gefunden", meeting_id)),
+        Err(e) => Err(format!("KI-Anweisungen konnten nicht gespeichert werden: {}", e)),
     }
 }
 

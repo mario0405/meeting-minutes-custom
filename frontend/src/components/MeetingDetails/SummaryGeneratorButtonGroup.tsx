@@ -71,7 +71,7 @@ export function SummaryGeneratorButtonGroup({
       if (!models || models.length === 0) {
         // No models available, show message and open settings
         toast.error(
-          'No Ollama models found. Please download gemma2:2b from Model Settings.',
+          'Keine Ollama-Modelle gefunden. Bitte lade ein Modell (z. B. gemma3:1b) in den Modell-Einstellungen herunter.',
           { duration: 5000 }
         );
         setSettingsDialogOpen(true);
@@ -83,7 +83,7 @@ export function SummaryGeneratorButtonGroup({
     } catch (error) {
       console.error('Error checking Ollama models:', error);
       toast.error(
-        'Failed to check Ollama models. Please check if Ollama is running and download a model.',
+        'Ollama-Modelle konnten nicht geprüft werden. Bitte prüfe, ob Ollama läuft, und lade ein Modell herunter.',
         { duration: 5000 }
       );
       setSettingsDialogOpen(true);
@@ -106,23 +106,23 @@ export function SummaryGeneratorButtonGroup({
         disabled={summaryStatus === 'processing' || isCheckingModels || isModelConfigLoading}
         title={
           isModelConfigLoading
-            ? 'Loading model configuration...'
+            ? 'Modellkonfiguration wird geladen…'
             : summaryStatus === 'processing'
-            ? 'Generating summary...'
+            ? 'Zusammenfassung wird erstellt…'
             : isCheckingModels
-            ? 'Checking models...'
-            : 'Generate AI Summary'
+            ? 'Modelle werden geprüft…'
+            : 'KI-Zusammenfassung erstellen'
         }
       >
         {summaryStatus === 'processing' || isCheckingModels || isModelConfigLoading ? (
           <>
             <Loader2 className="animate-spin xl:mr-2" size={18} />
-            <span className="hidden xl:inline">Processing...</span>
+            <span className="hidden xl:inline">Verarbeiten…</span>
           </>
         ) : (
           <>
             <Sparkles className="xl:mr-2" size={18} />
-            <span className="hidden lg:inline xl:inline">Generate Note</span>
+            <span className="hidden lg:inline xl:inline">Notiz erstellen</span>
           </>
         )}
       </Button>
@@ -133,17 +133,17 @@ export function SummaryGeneratorButtonGroup({
           <Button
             variant="outline"
             size="sm"
-            title="Summary Settings"
+            title="Modell-Einstellungen"
           >
             <Settings />
-            <span className="hidden lg:inline">AI Model</span>
+            <span className="hidden lg:inline">KI-Modell</span>
           </Button>
         </DialogTrigger>
         <DialogContent
           aria-describedby={undefined}
         >
           <VisuallyHidden>
-            <DialogTitle>Model Settings</DialogTitle>
+            <DialogTitle>Modell-Einstellungen</DialogTitle>
           </VisuallyHidden>
           <ModelSettingsModal
             onSave={async (config) => {
@@ -166,10 +166,10 @@ export function SummaryGeneratorButtonGroup({
             <Button
               variant="outline"
               size="sm"
-              title="Select summary template"
+              title="Meeting-Typ auswählen"
             >
               <FileText />
-              <span className="hidden lg:inline">Template</span>
+              <span className="hidden lg:inline">Meeting-Typ</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

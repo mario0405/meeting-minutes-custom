@@ -120,16 +120,16 @@ export function useModelConfiguration({ serverAddress }: UseModelConfigurationPr
       const { emit } = await import('@tauri-apps/api/event');
       await emit('model-config-updated', payload);
 
-      toast.success("Summary settings Saved successfully");
+      toast.success("Einstellungen gespeichert");
 
       await Analytics.trackSettingsChanged('model_config', `${payload.provider}_${payload.model}`);
     } catch (error) {
       console.error('Failed to save model config:', error);
-      toast.error("Failed to save summary settings", { description: String(error) });
+      toast.error("Einstellungen konnten nicht gespeichert werden", { description: String(error) });
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError('Failed to save model config: Unknown error');
+        setError('Modellkonfiguration konnte nicht gespeichert werden: Unbekannter Fehler');
       }
     }
   }, [modelConfig]);

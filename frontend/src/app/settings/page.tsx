@@ -21,10 +21,10 @@ export default function SettingsPage() {
   });
 
   const tabs = [
-    { id: 'general' as const, label: 'General', icon: <Settings2 className="w-4 h-4" /> },
-    { id: 'recording' as const, label: 'Recordings', icon: <Mic className="w-4 h-4" /> },
-    { id: 'Transcriptionmodels' as const, label: 'Transcription', icon: <DatabaseIcon className="w-4 h-4" /> },
-    { id: 'summaryModels' as const, label: 'Summary', icon: <SparkleIcon className="w-4 h-4" /> }
+    { id: 'general' as const, label: 'Allgemein', icon: <Settings2 className="w-4 h-4" /> },
+    { id: 'recording' as const, label: 'Aufnahmen', icon: <Mic className="w-4 h-4" /> },
+    { id: 'Transcriptionmodels' as const, label: 'Transkription', icon: <DatabaseIcon className="w-4 h-4" /> },
+    { id: 'summaryModels' as const, label: 'Zusammenfassung', icon: <SparkleIcon className="w-4 h-4" /> }
   ];
 
   // Load saved transcript configuration on mount
@@ -73,9 +73,9 @@ export default function SettingsPage() {
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
-              <span>Back</span>
+              <span>Zurück</span>
             </button>
-            <h1 className="text-3xl font-bold">Settings</h1>
+            <h1 className="text-3xl font-bold">Einstellungen</h1>
           </div>
         </div>
       </div>

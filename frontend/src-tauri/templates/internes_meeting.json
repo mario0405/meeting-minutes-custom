@@ -1,0 +1,16 @@
+{
+  "name": "Interne Meetings",
+  "description": "Kurze Notizen für interne Meetings (Titel, Kurz-Zusammenfassung, Aufgaben).",
+  "sections": [
+    {
+      "title": "Kurz-Zusammenfassung",
+      "instruction": "Sehr kurze Zusammenfassung des Meetings in maximal 2 Sätzen (Worum ging es? Was ist das wichtigste Ergebnis?).",
+      "format": "paragraph"
+    },
+    {
+      "title": "Aufgaben",
+      "instruction": "Liste aller Aufgaben/To-Dos. Immer angeben, wer was macht oder gemacht hat. Wenn ein Status erkennbar ist, ergänze ihn (z. B. offen/erledigt). Nutze kurze Bulletpoints.",
+      "format": "list"
+    }
+  ]
+}

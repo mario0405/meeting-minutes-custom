@@ -1,0 +1,21 @@
+{
+  "name": "Kundenmeetings",
+  "description": "Kurze Notizen für Kundenmeetings (Titel, Kunde, Kurz-Zusammenfassung, Aufgaben).",
+  "sections": [
+    {
+      "title": "Kunde",
+      "instruction": "Name des Kunden und – falls genannt – Firma/Organisation sowie ggf. Ansprechpartner (nur aus dem Transkript, nichts raten).",
+      "format": "paragraph"
+    },
+    {
+      "title": "Kurz-Zusammenfassung",
+      "instruction": "Sehr kurze Zusammenfassung in maximal 2 Sätzen (was wurde besprochen, was wurde vereinbart?).",
+      "format": "paragraph"
+    },
+    {
+      "title": "Aufgaben",
+      "instruction": "Liste aller Aufgaben/To-Dos. Immer angeben, wer was macht oder gemacht hat. Wenn ein Status erkennbar ist, ergänze ihn (z. B. offen/erledigt). Nutze kurze Bulletpoints.",
+      "format": "list"
+    }
+  ]
+}

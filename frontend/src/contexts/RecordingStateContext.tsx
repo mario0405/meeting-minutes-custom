@@ -31,7 +31,7 @@ const RecordingStateContext = createContext<RecordingStateContextType | null>(nu
 export const useRecordingState = () => {
   const context = useContext(RecordingStateContext);
   if (!context) {
-    throw new Error('useRecordingState must be used within a RecordingStateProvider');
+    throw new Error('useRecordingState muss innerhalb eines RecordingStateProvider verwendet werden');
   }
   return context;
 };

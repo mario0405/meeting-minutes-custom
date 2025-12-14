@@ -31,7 +31,7 @@ export function SummaryUpdaterButtonGroup({
         variant="outline"
         size="sm"
         className={`${isDirty ? 'bg-green-200' : ""}`}
-        title={isSaving ? "Saving" : "Save Changes"}
+        title={isSaving ? "Speichern…" : "Änderungen speichern"}
         onClick={() => {
           Analytics.trackButtonClick('save_changes', 'meeting_details');
           onSave();
@@ -41,12 +41,12 @@ export function SummaryUpdaterButtonGroup({
         {isSaving ? (
           <>
             <Loader2 className="animate-spin" />
-            <span className="hidden lg:inline">Saving...</span>
+            <span className="hidden lg:inline">Speichern…</span>
           </>
         ) : (
           <>
             <Save />
-            <span className="hidden lg:inline">Save</span>
+            <span className="hidden lg:inline">Speichern</span>
           </>
         )}
       </Button>
@@ -55,7 +55,7 @@ export function SummaryUpdaterButtonGroup({
       <Button
         variant="outline"
         size="sm"
-        title="Copy Summary"
+        title="Zusammenfassung kopieren"
         onClick={() => {
           Analytics.trackButtonClick('copy_summary', 'meeting_details');
           onCopy();
@@ -64,7 +64,7 @@ export function SummaryUpdaterButtonGroup({
         className="cursor-pointer"
       >
         <Copy />
-        <span className="hidden lg:inline">Copy</span>
+        <span className="hidden lg:inline">Kopieren</span>
       </Button>
 
       {/* Recording folder button */}
@@ -76,10 +76,10 @@ export function SummaryUpdaterButtonGroup({
           Analytics.trackButtonClick('open_recording_folder', 'meeting_details');
           onOpenFolder();
         }}
-        title="Open Recording Folder"
+        title="Aufnahmeordner öffnen"
       >
         <FolderOpen className="xl:mr-2" size={18} />
-        <span className="hidden xl:inline">Recording</span>
+        <span className="hidden xl:inline">Aufnahme</span>
       </Button>
 
       {/* Find button */}
@@ -87,7 +87,7 @@ export function SummaryUpdaterButtonGroup({
         <Button
           variant="outline"
           size="sm"
-          title="Find in Summary"
+          title="In der Zusammenfassung suchen"
           onClick={() => {
             Analytics.trackButtonClick('find_in_summary', 'meeting_details');
             onFind();
@@ -96,7 +96,7 @@ export function SummaryUpdaterButtonGroup({
           className="cursor-pointer"
         >
           <Search />
-          <span className="hidden lg:inline">Find</span>
+          <span className="hidden lg:inline">Suchen</span>
         </Button>
       )} */}
     </ButtonGroup>

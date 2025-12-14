@@ -8,6 +8,20 @@ use std::sync::RwLock;
 // Global storage for the bundled templates directory path
 static BUNDLED_TEMPLATES_DIR: Lazy<RwLock<Option<PathBuf>>> = Lazy::new(|| RwLock::new(None));
 
+// Only expose these two templates in the UI.
+const ALLOWED_TEMPLATE_IDS: &[&str] = &["internes_meeting", "kundenmeeting"];
+
+fn normalize_template_id(template_id: &str) -> &str {
+    match template_id {
+        // Backward-compatible mappings
+        "daily_standup" | "standard_meeting" | "project_sync" | "retrospective" | "psychatric_session" => {
+            "internes_meeting"
+        }
+        "sales_marketing_client_call" => "kundenmeeting",
+        other => other,
+    }
+}
+
 /// Set the bundled templates directory path (called once at app startup)
 pub fn set_bundled_templates_dir(path: PathBuf) {
     info!("Bundled templates directory set to: {:?}", path);
@@ -93,7 +107,16 @@ fn load_custom_template(template_id: &str) -> Option<String> {
 /// # Returns
 /// Parsed and validated Template struct
 pub fn get_template(template_id: &str) -> Result<Template, String> {
+    let template_id = normalize_template_id(template_id);
     info!("Loading template: {}", template_id);
+
+    if !ALLOWED_TEMPLATE_IDS.contains(&template_id) {
+        return Err(format!(
+            "Vorlage '{}' nicht gefunden. Verfügbare Vorlagen: {}",
+            template_id,
+            list_template_ids().join(", ")
+        ));
+    }
 
     // Try custom template first, then bundled, then built-in
     let json_content = if let Some(custom_content) = load_custom_template(template_id) {
@@ -107,7 +130,7 @@ pub fn get_template(template_id: &str) -> Result<Template, String> {
         builtin_content.to_string()
     } else {
         return Err(format!(
-            "Template '{}' not found. Available templates: {}",
+            "Vorlage '{}' nicht gefunden. Verfügbare Vorlagen: {}",
             template_id,
             list_template_ids().join(", ")
         ));
@@ -126,7 +149,7 @@ pub fn get_template(template_id: &str) -> Result<Template, String> {
 /// Parsed and validated Template struct
 pub fn validate_and_parse_template(json_content: &str) -> Result<Template, String> {
     let template: Template = serde_json::from_str(json_content)
-        .map_err(|e| format!("Failed to parse template JSON: {}", e))?;
+        .map_err(|e| format!("Vorlagen-JSON konnte nicht geparst werden: {}", e))?;
 
     template.validate()?;
 
@@ -145,53 +168,9 @@ pub fn list_template_ids() -> Vec<String> {
         .map(|s| s.to_string())
         .collect();
 
-    // Add bundled templates if directory is set
-    if let Ok(bundled_dir_lock) = BUNDLED_TEMPLATES_DIR.read() {
-        if let Some(bundled_dir) = bundled_dir_lock.as_ref() {
-            if bundled_dir.exists() {
-                match std::fs::read_dir(bundled_dir) {
-                    Ok(entries) => {
-                        for entry in entries.flatten() {
-                            if let Some(filename) = entry.file_name().to_str() {
-                                if filename.ends_with(".json") {
-                                    let id = filename.trim_end_matches(".json").to_string();
-                                    if !ids.contains(&id) {
-                                        ids.push(id);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        warn!("Failed to read bundled templates directory: {}", e);
-                    }
-                }
-            }
-        }
-    }
-
-    // Add custom templates if directory exists
-    if let Some(custom_dir) = get_custom_templates_dir() {
-        if custom_dir.exists() {
-            match std::fs::read_dir(&custom_dir) {
-                Ok(entries) => {
-                    for entry in entries.flatten() {
-                        if let Some(filename) = entry.file_name().to_str() {
-                            if filename.ends_with(".json") {
-                                let id = filename.trim_end_matches(".json").to_string();
-                                if !ids.contains(&id) {
-                                    ids.push(id);
-                                }
-                            }
-                        }
-                    }
-                }
-                Err(e) => {
-                    warn!("Failed to read custom templates directory: {}", e);
-                }
-            }
-        }
-    }
+    // Keep the UI limited to the two supported templates, but still allow custom overrides
+    // (by placing a JSON file with the same id in the user templates directory).
+    ids.retain(|id| ALLOWED_TEMPLATE_IDS.contains(&id.as_str()));
 
     ids.sort();
     ids
@@ -223,11 +202,11 @@ mod tests {
 
     #[test]
     fn test_get_builtin_template() {
-        let template = get_template("daily_standup");
+        let template = get_template("internes_meeting");
         assert!(template.is_ok());
 
         let template = template.unwrap();
-        assert_eq!(template.name, "Daily Standup");
+        assert_eq!(template.name, "Interne Meetings");
         assert!(!template.sections.is_empty());
     }
 
@@ -240,8 +219,8 @@ mod tests {
     #[test]
     fn test_list_template_ids() {
         let ids = list_template_ids();
-        assert!(ids.contains(&"daily_standup".to_string()));
-        assert!(ids.contains(&"standard_meeting".to_string()));
+        assert!(ids.contains(&"internes_meeting".to_string()));
+        assert!(ids.contains(&"kundenmeeting".to_string()));
     }
 
     #[test]

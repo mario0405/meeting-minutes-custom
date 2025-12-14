@@ -34,12 +34,26 @@ pub enum OllamaError {
 impl std::fmt::Display for OllamaError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            OllamaError::Timeout => write!(f, "Request timed out after 5 seconds. Please check if the Ollama server is running."),
-            OllamaError::NetworkError(msg) => write!(f, "Network error: {}. Please check your connection and endpoint URL.", msg),
-            OllamaError::InvalidEndpoint(msg) => write!(f, "Invalid endpoint: {}. Please check the URL format.", msg),
-            OllamaError::ServerError(msg) => write!(f, "Ollama server error: {}", msg),
-            OllamaError::NoModelsFound => write!(f, "No models found on the Ollama server. Please pull models using 'ollama pull <model>'."),
-            OllamaError::ParseError(msg) => write!(f, "Failed to parse server response: {}", msg),
+            OllamaError::Timeout => write!(
+                f,
+                "Zeitüberschreitung nach 5 Sekunden. Bitte prüfe, ob der Ollama-Server läuft."
+            ),
+            OllamaError::NetworkError(msg) => write!(
+                f,
+                "Netzwerkfehler: {}. Bitte prüfe deine Verbindung und die Endpoint-URL.",
+                msg
+            ),
+            OllamaError::InvalidEndpoint(msg) => write!(
+                f,
+                "Ungültiger Endpoint: {}. Bitte prüfe das URL-Format.",
+                msg
+            ),
+            OllamaError::ServerError(msg) => write!(f, "Ollama-Serverfehler: {}", msg),
+            OllamaError::NoModelsFound => write!(
+                f,
+                "Keine Modelle auf dem Ollama-Server gefunden. Bitte lade ein Modell mit `ollama pull <model>` herunter."
+            ),
+            OllamaError::ParseError(msg) => write!(f, "Antwort des Servers konnte nicht geparst werden: {}", msg),
         }
     }
 }
@@ -86,7 +100,7 @@ fn validate_endpoint_url(url: &str) -> Result<(), OllamaError> {
     // Check if URL starts with http:// or https://
     if !url.starts_with("http://") && !url.starts_with("https://") {
         return Err(OllamaError::InvalidEndpoint(
-            "URL must start with http:// or https://".to_string()
+            "URL muss mit http:// oder https:// beginnen".to_string()
         ));
     }
 
@@ -118,7 +132,7 @@ pub async fn get_ollama_models(endpoint: Option<String>) -> Result<Vec<OllamaMod
             // Only fallback to CLI if endpoint is localhost/empty
             if is_localhost_endpoint(endpoint.as_deref()) {
                 get_models_via_cli().map_err(|cli_err| {
-                    format!("{}\n\nAlso tried CLI: {}", http_err, cli_err)
+                    format!("{}\n\nZusätzlich per CLI versucht: {}", http_err, cli_err)
                 })
             } else {
                 Err(http_err)
@@ -142,7 +156,7 @@ async fn get_models_via_http_with_retry(endpoint: Option<&str>) -> Result<Vec<Ol
                 last_error = e.clone();
 
                 // Don't retry on certain errors
-                if e.contains("Invalid endpoint") || e.contains("404") {
+                if e.contains("Ungültiger Endpoint") || e.contains("Invalid endpoint") || e.contains("404") {
                     return Err(e);
                 }
 
@@ -155,7 +169,10 @@ async fn get_models_via_http_with_retry(endpoint: Option<&str>) -> Result<Vec<Ol
         }
     }
 
-    Err(format!("Failed after {} retries: {}", MAX_RETRIES, last_error))
+    Err(format!(
+        "Fehlgeschlagen nach {} Wiederholungen: {}",
+        MAX_RETRIES, last_error
+    ))
 }
 
 async fn get_models_via_http_async(endpoint: Option<&str>) -> Result<Vec<OllamaModel>, String> {
@@ -170,9 +187,13 @@ async fn get_models_via_http_async(endpoint: Option<&str>) -> Result<Vec<OllamaM
         .await
         .map_err(|e| {
             if e.is_timeout() {
-                OllamaError::NetworkError("Connection timed out".to_string()).to_string()
+                OllamaError::NetworkError("Verbindung zeitüberschritten".to_string()).to_string()
             } else if e.is_connect() {
-                OllamaError::NetworkError(format!("Cannot connect to {}. Please check if the server is running.", base_url)).to_string()
+                OllamaError::NetworkError(format!(
+                    "Verbindung zu {} nicht möglich. Bitte prüfe, ob der Server läuft.",
+                    base_url
+                ))
+                .to_string()
             } else {
                 OllamaError::NetworkError(e.to_string()).to_string()
             }
@@ -180,7 +201,7 @@ async fn get_models_via_http_async(endpoint: Option<&str>) -> Result<Vec<OllamaM
 
     if !response.status().is_success() {
         return Err(OllamaError::ServerError(
-            format!("HTTP {}: Server returned an error", response.status())
+            format!("HTTP {}: Server hat einen Fehler zurückgegeben", response.status())
         ).to_string());
     }
 
@@ -203,14 +224,14 @@ fn get_models_via_cli() -> Result<Vec<OllamaModel>, String> {
         .output()
         .map_err(|e| {
             OllamaError::NetworkError(
-                format!("Ollama CLI not found or not in PATH: {}", e)
+                format!("Ollama-CLI nicht gefunden oder nicht im PATH: {}", e)
             ).to_string()
         })?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         return Err(OllamaError::ServerError(
-            format!("Ollama CLI error: {}", stderr)
+            format!("Ollama-CLI-Fehler: {}", stderr)
         ).to_string());
     }
 
@@ -267,7 +288,7 @@ pub async fn pull_ollama_model<R: Runtime>(
         let downloading = DOWNLOADING_MODELS.read().await;
         if downloading.contains(&model_name) {
             log::warn!("Model {} is already being downloaded, ignoring duplicate request", model_name);
-            return Err(format!("Model {} is already being downloaded", model_name));
+            return Err(format!("Modell {} wird bereits heruntergeladen", model_name));
         }
     }
 
@@ -295,17 +316,20 @@ pub async fn pull_ollama_model<R: Runtime>(
         .await
         .map_err(|e| {
             if e.is_timeout() {
-                format!("Download timed out. The model may be large, please try using the Ollama CLI: ollama pull {}", model_name)
+                format!("Download zeitüberschritten. Das Modell ist eventuell sehr groß. Bitte versuche es über die Ollama-CLI: `ollama pull {}`", model_name)
             } else if e.is_connect() {
-                format!("Cannot connect to {}. Please check if the Ollama server is running.", base_url)
+                format!("Verbindung zu {} nicht möglich. Bitte prüfe, ob der Ollama-Server läuft.", base_url)
             } else {
-                format!("Failed to download model: {}", e)
+                format!("Modell konnte nicht heruntergeladen werden: {}", e)
             }
         })?;
 
     if !response.status().is_success() {
         let status = response.status();
-        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+        let error_text = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Unbekannter Fehler".to_string());
 
         // Remove from downloading set on error
         {
@@ -322,7 +346,10 @@ pub async fn pull_ollama_model<R: Runtime>(
             }),
         );
 
-        return Err(format!("Failed to pull model (HTTP {}): {}", status, error_text));
+        return Err(format!(
+            "Modell konnte nicht heruntergeladen werden (HTTP {}): {}",
+            status, error_text
+        ));
     }
 
     // Process streaming response (NDJSON format)
@@ -332,7 +359,7 @@ pub async fn pull_ollama_model<R: Runtime>(
 
     while let Some(chunk) = stream.next().await {
         let chunk = chunk.map_err(|e| {
-            let error_msg = format!("Failed to read stream: {}", e);
+            let error_msg = format!("Stream konnte nicht gelesen werden: {}", e);
 
             // Remove from downloading set on stream error
             let model_name_clone = model_name.clone();
@@ -391,7 +418,7 @@ pub async fn pull_ollama_model<R: Runtime>(
 
                 // Check for error status
                 if let Some(error) = json.get("error").and_then(|v| v.as_str()) {
-                    let error_msg = format!("Ollama error: {}", error);
+                    let error_msg = format!("Ollama-Fehler: {}", error);
 
                     // Remove from downloading set on Ollama error
                     {
@@ -455,18 +482,24 @@ pub async fn delete_ollama_model(
         .await
         .map_err(|e| {
             if e.is_timeout() {
-                format!("Delete request timed out for model: {}", model_name)
+                format!("Zeitüberschreitung beim Löschen des Modells: {}", model_name)
             } else if e.is_connect() {
-                format!("Cannot connect to {}. Please check if the Ollama server is running.", base_url)
+                format!("Verbindung zu {} nicht möglich. Bitte prüfe, ob der Ollama-Server läuft.", base_url)
             } else {
-                format!("Failed to delete model: {}", e)
+                format!("Modell konnte nicht gelöscht werden: {}", e)
             }
         })?;
 
     if !response.status().is_success() {
         let status = response.status();
-        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-        return Err(format!("Failed to delete model (HTTP {}): {}", status, error_text));
+        let error_text = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Unbekannter Fehler".to_string());
+        return Err(format!(
+            "Modell konnte nicht gelöscht werden (HTTP {}): {}",
+            status, error_text
+        ));
     }
 
     log::info!("Successfully deleted Ollama model: {}", model_name);

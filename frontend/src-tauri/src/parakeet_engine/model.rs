@@ -28,17 +28,17 @@ pub struct TimestampedResult {
 
 #[derive(thiserror::Error, Debug)]
 pub enum ParakeetError {
-    #[error("ORT error")]
+    #[error("ORT-Fehler")]
     Ort(#[from] ort::Error),
-    #[error("I/O error")]
+    #[error("I/O-Fehler")]
     Io(#[from] std::io::Error),
-    #[error("ndarray shape error")]
+    #[error("ndarray-Shape-Fehler")]
     Shape(#[from] ndarray::ShapeError),
-    #[error("Model input not found: {0}")]
+    #[error("Model-Input nicht gefunden: {0}")]
     InputNotFound(String),
-    #[error("Model output not found: {0}")]
+    #[error("Model-Output nicht gefunden: {0}")]
     OutputNotFound(String),
-    #[error("Failed to get tensor shape for input: {0}")]
+    #[error("Tensor-Shape für Input konnte nicht ermittelt werden: {0}")]
     TensorShape(String),
 }
 

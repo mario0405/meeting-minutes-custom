@@ -52,37 +52,37 @@ export interface TranscribeAudioRequest {
 export const MODEL_CONFIGS: Record<string, Partial<ModelInfo>> = {
   // Standard f16 models (full precision)
   'large-v3': {
-    description: 'Highest accuracy, best for important meetings. Slower processing.',
+    description: 'Höchste Genauigkeit – ideal für wichtige Meetings. Langsamere Verarbeitung.',
     size_mb: 2870,
     accuracy: 'High',
     speed: 'Slow'
   },
   'large-v3-turbo': {
-    description: 'Best accuracy with improved speed.',
+    description: 'Beste Genauigkeit bei höherer Geschwindigkeit.',
     size_mb: 809,
     accuracy: 'High',
     speed: 'Medium'
   },
   'medium': {
-    description: 'Balanced accuracy and speed. Good for most use cases.',
+    description: 'Gute Balance aus Genauigkeit und Geschwindigkeit – geeignet für die meisten Anwendungsfälle.',
     size_mb: 1420,
     accuracy: 'High',
     speed: 'Slow'
   },
   'small': {
-    description: 'Fast processing with good quality. Great for quick transcription.',
+    description: 'Schnelle Verarbeitung bei guter Qualität – ideal für schnelle Transkription.',
     size_mb: 466,
     accuracy: 'Good',
     speed: 'Medium'
   },
   'base': {
-    description: 'Good balance of speed and accuracy.',
+    description: 'Gute Balance aus Geschwindigkeit und Genauigkeit.',
     size_mb: 142,
     accuracy: 'Good',
     speed: 'Fast'
   },
   'tiny': {
-    description: 'Fastest processing, good for real-time use.',
+    description: 'Schnellste Verarbeitung – gut für Echtzeit.',
     size_mb: 39,
     accuracy: 'Decent',
     speed: 'Very Fast'
@@ -90,31 +90,31 @@ export const MODEL_CONFIGS: Record<string, Partial<ModelInfo>> = {
 
   // Q5_0 quantized models (balanced speed/accuracy)
   'large-v3-q5_0': {
-    description: 'Quantized large model, best balance of speed and accuracy.',
+    description: 'Quantisiertes Large‑Modell – beste Balance aus Geschwindigkeit und Genauigkeit.',
     size_mb: 1000,
     accuracy: 'High',
     speed: 'Medium'
   },
   'medium-q5_0': {
-    description: 'Quantized medium model, professional quality with better speed.',
+    description: 'Quantisiertes Medium‑Modell – professionelle Qualität bei höherer Geschwindigkeit.',
     size_mb: 852,
     accuracy: 'High',
     speed: 'Medium'
   },
   'small-q5_0': {
-    description: 'Quantized small model, faster than f16 version.',
+    description: 'Quantisiertes Small‑Modell – schneller als die f16‑Version.',
     size_mb: 280,
     accuracy: 'Good',
     speed: 'Fast'
   },
   'base-q5_0': {
-    description: 'Quantized base model, good speed/accuracy balance.',
+    description: 'Quantisiertes Base‑Modell – gute Balance aus Geschwindigkeit und Genauigkeit.',
     size_mb: 85,
     accuracy: 'Good',
     speed: 'Fast'
   },
   'tiny-q5_0': {
-    description: 'Quantized tiny model, ~50% faster processing.',
+    description: 'Quantisiertes Tiny‑Modell – ca. 50% schnellere Verarbeitung.',
     size_mb: 26,
     accuracy: 'Decent',
     speed: 'Very Fast'
@@ -122,25 +122,25 @@ export const MODEL_CONFIGS: Record<string, Partial<ModelInfo>> = {
 
   // Q4_0 quantized models (maximum speed)
   'medium-q4_0': {
-    description: 'Fast medium model, good quality with maximum speed.',
+    description: 'Schnelles Medium‑Modell – gute Qualität bei maximaler Geschwindigkeit.',
     size_mb: 710,
     accuracy: 'High',
     speed: 'Fast'
   },
   'small-q4_0': {
-    description: 'Fastest small model, rapid processing.',
+    description: 'Schnellstes Small‑Modell – sehr schnelle Verarbeitung.',
     size_mb: 233,
     accuracy: 'Good',
     speed: 'Very Fast'
   },
   'base-q4_0': {
-    description: 'Fastest base model, good for quick transcription.',
+    description: 'Schnellstes Base‑Modell – gut für schnelle Transkription.',
     size_mb: 71,
     accuracy: 'Good',
     speed: 'Very Fast'
   },
   'tiny-q4_0': {
-    description: 'Fastest tiny model, some accuracy loss.',
+    description: 'Schnellstes Tiny‑Modell – etwas weniger Genauigkeit.',
     size_mb: 21,
     accuracy: 'Decent',
     speed: 'Very Fast'
@@ -194,11 +194,11 @@ export function getModelPerformanceBadge(modelName: string): { label: string; co
   const type = getModelType(modelName);
   switch (type) {
     case 'f16':
-      return { label: 'Full Precision', color: 'blue' };
+      return { label: 'Volle Präzision', color: 'blue' };
     case 'q5_0':
-      return { label: 'Balanced', color: 'green' };
+      return { label: 'Ausgewogen', color: 'green' };
     case 'q4_0':
-      return { label: 'Fast', color: 'orange' };
+      return { label: 'Schnell', color: 'orange' };
     default:
       return { label: 'Standard', color: 'gray' };
   }
@@ -213,42 +213,42 @@ export function getModelTagline(modelName: string, speed: ProcessingSpeed, accur
   let speedText = '';
   switch (speed) {
     case 'Very Fast':
-      speedText = 'Real time';
+      speedText = 'Echtzeit';
       break;
     case 'Fast':
-      speedText = 'Fast processing';
+      speedText = 'Schnelle Verarbeitung';
       break;
     case 'Medium':
-      speedText = 'Moderate speed';
+      speedText = 'Mittlere Geschwindigkeit';
       break;
     case 'Slow':
-      speedText = 'Slower processing';
+      speedText = 'Langsamere Verarbeitung';
       break;
   }
 
   // Key feature based on model and accuracy
   let featureText = '';
   if (baseName === 'large-v3') {
-    featureText = 'Highest accuracy';
+    featureText = 'Höchste Genauigkeit';
   } else if (baseName === 'large-v3-turbo') {
-    featureText = 'Best accuracy with speed';
+    featureText = 'Beste Genauigkeit bei hoher Geschwindigkeit';
   } else if (baseName === 'medium') {
-    featureText = accuracy === 'High' ? 'Professional quality' : 'Balanced quality';
+    featureText = accuracy === 'High' ? 'Professionelle Qualität' : 'Ausgewogene Qualität';
   } else if (baseName === 'small') {
-    featureText = 'Good accuracy';
+    featureText = 'Gute Genauigkeit';
   } else if (baseName === 'base') {
-    featureText = 'Balanced quality';
+    featureText = 'Ausgewogene Qualität';
   } else if (baseName === 'tiny') {
-    featureText = 'Fastest option';
+    featureText = 'Schnellste Option';
   }
 
   // Add quantization note if applicable
   if (isQuantized) {
     const quantType = getModelType(modelName);
     if (quantType === 'q5_0') {
-      featureText += ', optimized';
+      featureText += ', optimiert';
     } else if (quantType === 'q4_0') {
-      featureText += ', ultra fast';
+      featureText += ', ultraschnell';
     }
   }
 

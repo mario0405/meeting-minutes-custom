@@ -150,7 +150,7 @@ export function PreferenceSettings() {
   };
 
   if (loading || notificationsEnabled === null) {
-    return <div className="max-w-2xl mx-auto p-6">Loading Preferences...</div>
+    return <div className="max-w-2xl mx-auto p-6">Einstellungen werden geladen…</div>
   }
 
   return (
@@ -159,8 +159,8 @@ export function PreferenceSettings() {
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Notifications</h3>
-            <p className="text-sm text-gray-600">Enable or disable notifications of start and end of meeting</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Benachrichtigungen</h3>
+            <p className="text-sm text-gray-600">Benachrichtigungen für Start und Ende einer Aufnahme ein-/ausschalten</p>
           </div>
           <Switch checked={notificationsEnabled} onCheckedChange={setNotificationsEnabled} />
         </div>
@@ -168,9 +168,9 @@ export function PreferenceSettings() {
 
       {/* Data Storage Locations Section */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Data Storage Locations</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Speicherorte</h3>
         <p className="text-sm text-gray-600 mb-6">
-          View and access where Meetily stores your data
+          Zeigt, wo Meetily deine Daten speichert und ermöglicht den Zugriff
         </p>
 
         <div className="space-y-4">
@@ -178,14 +178,14 @@ export function PreferenceSettings() {
           {/* <div className="p-4 border rounded-lg bg-gray-50">
             <div className="font-medium mb-2">Database</div>
             <div className="text-sm text-gray-600 mb-3 break-all font-mono text-xs">
-              {storageLocations?.database || 'Loading...'}
+              {storageLocations?.database || 'Wird geladen…'}
             </div>
             <button
               onClick={() => handleOpenFolder('database')}
               className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
             >
               <FolderOpen className="w-4 h-4" />
-              Open Folder
+              Ordner öffnen
             </button>
           </div> */}
 
@@ -193,36 +193,36 @@ export function PreferenceSettings() {
           {/* <div className="p-4 border rounded-lg bg-gray-50">
             <div className="font-medium mb-2">Whisper Models</div>
             <div className="text-sm text-gray-600 mb-3 break-all font-mono text-xs">
-              {storageLocations?.models || 'Loading...'}
+              {storageLocations?.models || 'Wird geladen…'}
             </div>
             <button
               onClick={() => handleOpenFolder('models')}
               className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
             >
               <FolderOpen className="w-4 h-4" />
-              Open Folder
+              Ordner öffnen
             </button>
           </div> */}
 
           {/* Recordings Location */}
           <div className="p-4 border rounded-lg bg-gray-50">
-            <div className="font-medium mb-2">Meeting Recordings</div>
+            <div className="font-medium mb-2">Meeting-Aufnahmen</div>
             <div className="text-sm text-gray-600 mb-3 break-all font-mono text-xs">
-              {storageLocations?.recordings || 'Loading...'}
+              {storageLocations?.recordings || 'Wird geladen…'}
             </div>
             <button
               onClick={() => handleOpenFolder('recordings')}
               className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
             >
               <FolderOpen className="w-4 h-4" />
-              Open Folder
+              Ordner öffnen
             </button>
           </div>
         </div>
 
         <div className="mt-4 p-3 bg-blue-50 rounded-md">
           <p className="text-xs text-blue-800">
-            <strong>Note:</strong> Database and models are stored together in your application data directory for unified management.
+            <strong>Hinweis:</strong> Datenbank und Modelle werden gemeinsam im Anwendungsdaten-Verzeichnis gespeichert.
           </p>
         </div>
       </div>

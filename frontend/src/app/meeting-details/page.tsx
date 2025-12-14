@@ -13,6 +13,7 @@ interface MeetingDetailsResponse {
   title: string;
   created_at: string;
   updated_at: string;
+  summary_prompt?: string;
   transcripts: Transcript[];
 }
 
@@ -99,7 +100,7 @@ function MeetingDetailsContent() {
       setCurrentMeeting({ id: data.id, title: data.title });
     } catch (error) {
       console.error('Error fetching meeting details:', error);
-      setError("Failed to load meeting details");
+      setError("Meeting-Details konnten nicht geladen werden");
     }
   }, [meetingId, setCurrentMeeting]);
 
@@ -116,7 +117,7 @@ function MeetingDetailsContent() {
 
     if (!meetingId || meetingId === 'intro-call') {
       console.warn('⚠️ No valid meeting ID in URL - meetingId:', meetingId);
-      setError("No meeting selected");
+      setError("Kein Meeting ausgewählt");
       setIsLoading(false);
       Analytics.trackPageView('meeting_details');
       return;
@@ -277,7 +278,7 @@ function MeetingDetailsContent() {
             onClick={() => router.push('/')}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Go Back
+            Zurück
           </button>
         </div>
       </div>

@@ -14,7 +14,7 @@ interface UseMeetingDataProps {
 export function useMeetingData({ meeting, summaryData, onMeetingUpdated }: UseMeetingDataProps) {
   // State
   const [transcripts] = useState<Transcript[]>(meeting.transcripts);
-  const [meetingTitle, setMeetingTitle] = useState(meeting.title || '+ New Call');
+  const [meetingTitle, setMeetingTitle] = useState(meeting.title || '+ Neues Meeting');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isTitleDirty, setIsTitleDirty] = useState(false);
   const [aiSummary, setAiSummary] = useState<Summary | null>(summaryData);
@@ -60,7 +60,7 @@ export function useMeetingData({ meeting, summaryData, onMeetingUpdated }: UseMe
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError('Failed to save meeting title: Unknown error');
+        setError('Meeting-Titel konnte nicht gespeichert werden: Unbekannter Fehler');
       }
       return false;
     }
@@ -104,7 +104,7 @@ export function useMeetingData({ meeting, summaryData, onMeetingUpdated }: UseMe
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError('Failed to save meeting summary: Unknown error');
+        setError('Zusammenfassung konnte nicht gespeichert werden: Unbekannter Fehler');
       }
     }
   }, [meeting.id, meetingTitle]);
@@ -125,10 +125,10 @@ export function useMeetingData({ meeting, summaryData, onMeetingUpdated }: UseMe
         await handleSaveSummary(aiSummary);
       }
 
-      toast.success("Changes saved successfully");
+      toast.success("Änderungen gespeichert");
     } catch (error) {
       console.error('Failed to save changes:', error);
-      toast.error("Failed to save changes", { description: String(error) });
+      toast.error("Änderungen konnten nicht gespeichert werden", { description: String(error) });
     } finally {
       setIsSaving(false);
     }

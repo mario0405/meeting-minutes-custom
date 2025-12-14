@@ -1,11 +1,13 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Summary, SummaryResponse } from '@/types';
 import { useSidebar } from '@/components/Sidebar/SidebarProvider';
 import Analytics from '@/lib/analytics';
 import { TranscriptPanel } from '@/components/MeetingDetails/TranscriptPanel';
 import { SummaryPanel } from '@/components/MeetingDetails/SummaryPanel';
+import { invoke as invokeTauri } from '@tauri-apps/api/core';
+import { toast } from 'sonner';
 
 // Custom hooks
 import { useMeetingData } from '@/hooks/meeting-details/useMeetingData';
@@ -35,9 +37,11 @@ export default function PageContent({
   });
 
   // State
-  const [customPrompt, setCustomPrompt] = useState<string>('');
+  const [customPrompt, setCustomPrompt] = useState<string>(() => meeting?.summary_prompt ?? '');
   const [isRecording] = useState(false);
   const [summaryResponse] = useState<SummaryResponse | null>(null);
+  const lastSavedPromptRef = useRef<string>((meeting?.summary_prompt ?? '').trim());
+  const hasShownPromptSaveErrorRef = useRef<boolean>(false);
 
   // Sidebar context
   const { serverAddress } = useSidebar();
@@ -75,12 +79,50 @@ export default function PageContent({
     Analytics.trackPageView('meeting_details');
   }, []);
 
+  // Keep custom prompt in sync when switching meetings
+  useEffect(() => {
+    const promptFromMeeting = (meeting?.summary_prompt ?? '') as string;
+    setCustomPrompt(promptFromMeeting);
+    lastSavedPromptRef.current = promptFromMeeting.trim();
+    hasShownPromptSaveErrorRef.current = false;
+  }, [meeting?.id, meeting?.summary_prompt]);
+
+  // Persist custom prompt per meeting (debounced)
+  useEffect(() => {
+    const meetingId = meeting?.id as string | undefined;
+    if (!meetingId) return;
+
+    const normalized = customPrompt.trim();
+    if (normalized === lastSavedPromptRef.current) return;
+
+    const timeout = setTimeout(async () => {
+      try {
+        await invokeTauri('api_save_meeting_summary_prompt', {
+          meetingId,
+          summaryPrompt: customPrompt,
+        });
+        lastSavedPromptRef.current = normalized;
+        hasShownPromptSaveErrorRef.current = false;
+      } catch (error) {
+        console.error('Failed to save meeting summary prompt:', error);
+        if (!hasShownPromptSaveErrorRef.current) {
+          toast.error('KI-Anweisungen konnten nicht gespeichert werden', {
+            description: String(error),
+          });
+          hasShownPromptSaveErrorRef.current = true;
+        }
+      }
+    }, 700);
+
+    return () => clearTimeout(timeout);
+  }, [customPrompt, meeting?.id]);
+
   // Auto-generate summary when flag is set
   useEffect(() => {
     const autoGenerate = async () => {
       if (shouldAutoGenerate && meetingData.transcripts.length > 0) {
         console.log(`🤖 Auto-generating summary with ${modelConfig.modelConfig.provider}/${modelConfig.modelConfig.model}...`);
-        await summaryGeneration.handleGenerateSummary('');
+        await summaryGeneration.handleGenerateSummary(customPrompt);
 
         // Notify parent that auto-generation is complete
         if (onAutoGenerateComplete) {

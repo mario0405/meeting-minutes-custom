@@ -158,11 +158,14 @@ async fn fetch_model_info(
         .await
         .map_err(|e| {
             if e.is_timeout() {
-                format!("Request timed out while fetching metadata for {}", model_name)
+                format!("Zeitüberschreitung beim Abrufen der Metadaten für {}", model_name)
             } else if e.is_connect() {
-                format!("Cannot connect to {}. Ollama server may not be running.", base_url)
+                format!(
+                    "Verbindung zu {} nicht möglich. Der Ollama-Server läuft möglicherweise nicht.",
+                    base_url
+                )
             } else {
-                format!("Network error: {}", e)
+                format!("Netzwerkfehler: {}", e)
             }
         })?;
 
@@ -174,7 +177,7 @@ async fn fetch_model_info(
     let show_response: OllamaShowResponse = response
         .json()
         .await
-        .map_err(|e| format!("Failed to parse API response: {}", e))?;
+        .map_err(|e| format!("API-Antwort konnte nicht geparst werden: {}", e))?;
 
     // Try to get context size from model_info (verbose mode) first
     let mut context_size = extract_context_from_model_info(&show_response.model_info, &show_response.details.family);

@@ -30,98 +30,98 @@ const NotePage = ({ params }: PageProps) => {
   // This would normally come from your database
   const sampleData: Record<string, Note> = {
     'team-sync-dec-26': {
-      title: 'Team Sync - Dec 26',
+      title: 'Team-Abstimmung – 26. Dez',
       date: '2024-12-26',
-      time: '10:00 AM - 11:00 AM',
+      time: '10:00 – 11:00',
       attendees: ['John Doe', 'Jane Smith', 'Mike Johnson'],
-      tags: ['Team Sync', 'Weekly', 'Product'],
+      tags: ['Team-Abstimmung', 'Wöchentlich', 'Produkt'],
       content: `
-# Meeting Summary
-Team sync discussion about Q1 2024 goals and current project status.
+# Meeting-Zusammenfassung
+Team-Abstimmung zu den Zielen für Q1 2024 und dem aktuellen Projektstatus.
 
-## Agenda Items
-1. Project Status Updates
-2. Q1 2024 Planning
-3. Team Concerns & Feedback
+## Agenda
+1. Projekt-Statusupdates
+2. Planung Q1 2024
+3. Team-Themen & Feedback
 
-## Key Decisions
-- Prioritized mobile app development for Q1
-- Scheduled weekly design reviews
-- Added two new features to the roadmap
+## Wichtige Entscheidungen
+- Mobile-App-Entwicklung für Q1 priorisiert
+- Wöchentliche Design-Reviews geplant
+- Zwei neue Features in die Roadmap aufgenommen
 
-## Action Items
-- [ ] John: Create project timeline
-- [ ] Jane: Schedule design review meetings
-- [ ] Mike: Update documentation
+## Aufgaben
+- [ ] John: Projekt-Zeitplan erstellen
+- [ ] Jane: Design-Review-Meetings terminieren
+- [ ] Mike: Dokumentation aktualisieren
 
-## Notes
-- Discussed current project bottlenecks
-- Reviewed customer feedback from last release
-- Planned resource allocation for upcoming sprint
+## Notizen
+- Aktuelle Projekt-Engpässe besprochen
+- Kundenfeedback aus dem letzten Release geprüft
+- Ressourcenplanung für den nächsten Sprint vorgenommen
       `
     },
     'product-review': {
-      title: 'Product Review',
+      title: 'Produkt-Review',
       date: '2024-12-26',
-      time: '2:00 PM - 3:00 PM',
+      time: '14:00 – 15:00',
       attendees: ['Sarah Wilson', 'Tom Brown', 'Alex Chen'],
-      tags: ['Product', 'Review', 'Quarterly'],
+      tags: ['Produkt', 'Review', 'Quartal'],
       content: `
-# Product Review Meeting
+# Produkt-Review-Meeting
 
-## Overview
-Quarterly product review session with stakeholders.
+## Überblick
+Quartalsweises Produkt-Review mit Stakeholdern.
 
-## Discussion Points
-1. Q4 Performance Review
-2. Feature Prioritization
-3. Customer Feedback Analysis
+## Diskussionsthemen
+1. Rückblick auf die Performance in Q4
+2. Feature-Priorisierung
+3. Analyse von Kundenfeedback
 
-## Action Items
-- [ ] Update product roadmap
-- [ ] Schedule user research sessions
-- [ ] Review competitor analysis
+## Aufgaben
+- [ ] Produkt-Roadmap aktualisieren
+- [ ] User-Research-Sessions planen
+- [ ] Wettbewerbsanalyse prüfen
       `
     },
     'project-ideas': {
-      title: 'Project Ideas',
+      title: 'Projekt-Ideen',
       date: '2024-12-26',
-      tags: ['Ideas', 'Planning'],
+      tags: ['Ideen', 'Planung'],
       content: `
-# Project Ideas
+# Projekt-Ideen
 
-## New Features
-1. AI-powered meeting summaries
-2. Calendar integration
-3. Team collaboration tools
+## Neue Features
+1. KI-gestützte Meeting-Zusammenfassungen
+2. Kalender-Integration
+3. Team-Kollaborationstools
 
-## Improvements
-- Enhanced search functionality
-- Better note organization
-- Real-time collaboration
+## Verbesserungen
+- Verbesserte Suchfunktion
+- Bessere Notiz-Organisation
+- Echtzeit-Zusammenarbeit
       `
     },
     'action-items': {
-      title: 'Action Items',
+      title: 'Aufgaben',
       date: '2024-12-26',
-      tags: ['Tasks', 'Todo', 'Planning'],
+      tags: ['Aufgaben', 'To-do', 'Planung'],
       content: `
-# Action Items
+# Aufgaben
 
-## High Priority
-- [ ] Deploy v2.0 to production
-- [ ] Fix critical security issues
-- [ ] Complete user documentation
+## Hohe Priorität
+- [ ] v2.0 in Produktion deployen
+- [ ] Kritische Sicherheitsprobleme beheben
+- [ ] Nutzerdokumentation fertigstellen
 
-## Medium Priority
-- [ ] Update dependencies
-- [ ] Implement error tracking
-- [ ] Add unit tests
+## Mittlere Priorität
+- [ ] Abhängigkeiten aktualisieren
+- [ ] Fehler-Tracking implementieren
+- [ ] Unit-Tests ergänzen
 
-## Low Priority
-- [ ] Refactor legacy code
-- [ ] Improve code documentation
-- [ ] Setup development guidelines
+## Niedrige Priorität
+- [ ] Legacy-Code refaktorieren
+- [ ] Code-Dokumentation verbessern
+- [ ] Entwicklungsrichtlinien aufsetzen
       `
     }
   };
@@ -129,7 +129,7 @@ Quarterly product review session with stakeholders.
   const note = sampleData[params.id as keyof typeof sampleData];
 
   if (!note) {
-    return <div className="p-8">Note not found</div>;
+    return <div className="p-8">Notiz nicht gefunden</div>;
   }
 
   return (

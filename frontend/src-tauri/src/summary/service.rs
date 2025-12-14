@@ -32,7 +32,7 @@ impl SummaryService {
     /// * `model_provider` - LLM provider name (e.g., "ollama", "openai")
     /// * `model_name` - Specific model (e.g., "gpt-4", "llama3.2:latest")
     /// * `custom_prompt` - Optional user-provided context
-    /// * `template_id` - Template identifier (e.g., "daily_standup", "standard_meeting")
+    /// * `template_id` - Template identifier (e.g., "internes_meeting", "kundenmeeting")
     pub async fn process_transcript_background<R: tauri::Runtime>(
         _app: AppHandle<R>,
         pool: SqlitePool,
@@ -63,14 +63,14 @@ impl SummaryService {
             Ok(Some(key)) if !key.is_empty() => key,
             Ok(None) | Ok(Some(_)) => {
                 if provider != LLMProvider::Ollama {
-                    let err_msg = format!("Api key not found for {}", &model_provider);
+                    let err_msg = format!("API-Key für {} nicht gefunden", &model_provider);
                     Self::update_process_failed(&pool, &meeting_id, &err_msg).await;
                     return;
                 }
                 String::new()
             }
             Err(e) => {
-                let err_msg = format!("Failed to retrieve api key for {} : {}", &model_provider, e);
+                let err_msg = format!("API-Key für {} konnte nicht abgerufen werden: {}", &model_provider, e);
                 Self::update_process_failed(&pool, &meeting_id, &err_msg).await;
                 return;
             }
@@ -138,7 +138,7 @@ impl SummaryService {
                     Self::update_process_failed(
                         &pool,
                         &meeting_id,
-                        "Summary generation failed: No content was processed.",
+                        "Zusammenfassung fehlgeschlagen: Es wurde kein Inhalt verarbeitet.",
                     )
                     .await;
                     return;

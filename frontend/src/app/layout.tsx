@@ -64,7 +64,7 @@ export default function RootLayout({
   }, [])
 
   return (
-    <html lang="en">
+    <html lang="de">
       <body className={`${sourceSans3.variable} font-sans`}>
         <AnalyticsProvider>
           <RecordingStateProvider>

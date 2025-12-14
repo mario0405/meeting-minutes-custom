@@ -62,7 +62,7 @@ impl MeetingsRepository {
 
         // Get meeting details
         let meeting: Option<MeetingModel> =
-            sqlx::query_as("SELECT id, title, created_at, updated_at, folder_path FROM meetings WHERE id = ?")
+            sqlx::query_as("SELECT id, title, created_at, updated_at, folder_path, summary_prompt FROM meetings WHERE id = ?")
                 .bind(meeting_id)
                 .fetch_optional(&mut *transaction)
                 .await?;
@@ -100,6 +100,7 @@ impl MeetingsRepository {
                 title: meeting.title,
                 created_at: meeting.created_at.0.to_rfc3339(),
                 updated_at: meeting.updated_at.0.to_rfc3339(),
+                summary_prompt: meeting.summary_prompt,
                 transcripts: meeting_transcripts,
             }))
         } else {
@@ -167,6 +168,47 @@ impl MeetingsRepository {
             .bind(meeting_id)
             .execute(&mut *transaction)
             .await?;
+
+        transaction.commit().await?;
+        Ok(true)
+    }
+
+    pub async fn update_meeting_summary_prompt(
+        pool: &SqlitePool,
+        meeting_id: &str,
+        summary_prompt: &str,
+    ) -> Result<bool, SqlxError> {
+        if meeting_id.trim().is_empty() {
+            return Err(SqlxError::Protocol(
+                "meeting_id cannot be empty".to_string(),
+            ));
+        }
+
+        let mut conn = pool.acquire().await?;
+        let mut transaction = conn.begin().await?;
+
+        let now = Utc::now().naive_utc();
+
+        let normalized_prompt = summary_prompt.trim();
+        let prompt_to_store = if normalized_prompt.is_empty() {
+            None
+        } else {
+            Some(normalized_prompt)
+        };
+
+        let rows_affected = sqlx::query(
+            "UPDATE meetings SET summary_prompt = ?, updated_at = ? WHERE id = ?",
+        )
+        .bind(prompt_to_store)
+        .bind(now)
+        .bind(meeting_id)
+        .execute(&mut *transaction)
+        .await?;
+
+        if rows_affected.rows_affected() == 0 {
+            transaction.rollback().await?;
+            return Ok(false);
+        }
 
         transaction.commit().await?;
         Ok(true)

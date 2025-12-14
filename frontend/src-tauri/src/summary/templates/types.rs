@@ -38,30 +38,30 @@ impl Template {
     /// Validates the template structure
     pub fn validate(&self) -> Result<(), String> {
         if self.name.is_empty() {
-            return Err("Template name cannot be empty".to_string());
+            return Err("Vorlagenname darf nicht leer sein".to_string());
         }
 
         if self.description.is_empty() {
-            return Err("Template description cannot be empty".to_string());
+            return Err("Vorlagenbeschreibung darf nicht leer sein".to_string());
         }
 
         if self.sections.is_empty() {
-            return Err("Template must have at least one section".to_string());
+            return Err("Vorlage muss mindestens einen Abschnitt enthalten".to_string());
         }
 
         for (i, section) in self.sections.iter().enumerate() {
             if section.title.is_empty() {
-                return Err(format!("Section {} has empty title", i));
+                return Err(format!("Abschnitt {} hat keinen Titel", i));
             }
 
             if section.instruction.is_empty() {
-                return Err(format!("Section '{}' has empty instruction", section.title));
+                return Err(format!("Abschnitt '{}' hat keine Anweisung", section.title));
             }
 
             match section.format.as_str() {
                 "paragraph" | "list" | "string" => {},
                 other => return Err(format!(
-                    "Section '{}' has invalid format '{}'. Must be 'paragraph', 'list', or 'string'",
+                    "Abschnitt '{}' hat ein ungültiges Format '{}'. Erlaubt sind 'paragraph', 'list' oder 'string'",
                     section.title, other
                 )),
             }
@@ -72,7 +72,7 @@ impl Template {
 
     /// Generates a clean markdown template structure
     pub fn to_markdown_structure(&self) -> String {
-        let mut markdown = String::from("# <Add Title here>\n\n");
+        let mut markdown = String::from("# <Titel hier einfügen>\n\n");
 
         for section in &self.sections {
             markdown.push_str(&format!("**{}**\n\n", section.title));
@@ -84,12 +84,12 @@ impl Template {
     /// Generates section-specific instructions for the LLM
     pub fn to_section_instructions(&self) -> String {
         let mut instructions = String::from(
-            "- **For the main title (`# [AI-Generated Title]`):** Analyze the entire transcript and create a concise, descriptive title for the meeting.\n"
+            "- **Für den Haupttitel (`# [KI-generierter Titel]`):** Analysiere das gesamte Transkript und erstelle einen kurzen, aussagekräftigen Titel für das Meeting.\n"
         );
 
         for section in &self.sections {
             instructions.push_str(&format!(
-                "- **For the '{}' section:** {}.\n",
+                "- **Für den Abschnitt '{}'**: {}.\n",
                 section.title, section.instruction
             ));
 
@@ -99,7 +99,7 @@ impl Template {
 
             if let Some(format) = item_format {
                 instructions.push_str(&format!(
-                    "  - Items in this section should follow the format: `{}`.\n",
+                    "  - Elemente in diesem Abschnitt sollen folgendem Format folgen: `{}`.\n",
                     format
                 ));
             }

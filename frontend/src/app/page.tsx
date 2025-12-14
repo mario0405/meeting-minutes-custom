@@ -56,7 +56,7 @@ export default function Home() {
   const [showSummary, setShowSummary] = useState(false);
   const [summaryStatus, setSummaryStatus] = useState<SummaryStatus>('idle');
   const [barHeights, setBarHeights] = useState(['58%', '76%', '58%']);
-  const [meetingTitle, setMeetingTitle] = useState('+ New Call');
+  const [meetingTitle, setMeetingTitle] = useState('+ Neues Meeting');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
   const [aiSummary, setAiSummary] = useState<Summary | null>({
@@ -474,7 +474,7 @@ export default function Home() {
         console.log('✅ MAIN transcript listener setup complete');
       } catch (error) {
         console.error('❌ Failed to setup MAIN transcript listener:', error);
-        alert('Failed to setup transcript listener. Check console for details.');
+        alert('Transkript-Listener konnte nicht eingerichtet werden. Bitte prüfe die Konsole für Details.');
       }
     };
 
@@ -676,7 +676,7 @@ export default function Home() {
         }));
         setModels(modelList);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load Ollama models');
+        setError(err instanceof Error ? err.message : 'Ollama-Modelle konnten nicht geladen werden');
         console.error('Error loading models:', err);
       }
     };
@@ -721,7 +721,7 @@ export default function Home() {
       await showRecordingNotification();
     } catch (error) {
       console.error('Failed to start recording:', error);
-      alert('Failed to start recording. Check console for details.');
+      alert('Aufnahme konnte nicht gestartet werden. Bitte prüfe die Konsole für Details.');
       setIsRecordingState(false); // Reset state on error
       Analytics.trackButtonClick('start_recording_error', 'home_page');
     }
@@ -769,7 +769,7 @@ export default function Home() {
             await showRecordingNotification();
           } catch (error) {
             console.error('Failed to auto-start recording:', error);
-            alert('Failed to start recording. Check console for details.');
+            alert('Aufnahme konnte nicht gestartet werden. Bitte prüfe die Konsole für Details.');
             Analytics.trackButtonClick('start_recording_error', 'sidebar_auto');
           }
         }
@@ -830,7 +830,7 @@ export default function Home() {
           stack: error.stack,
         });
       }
-      alert('Failed to stop recording. Check console for details.');
+      alert('Aufnahme konnte nicht gestoppt werden. Bitte prüfe die Konsole für Details.');
       setIsRecordingState(false); // Reset state on error
     }
   };
@@ -1006,14 +1006,14 @@ export default function Home() {
             }
           } catch (error) {
             console.warn('Could not fetch meeting details, using ID only:', error);
-            setCurrentMeeting({ id: meetingId, title: meetingTitle || 'New Meeting' });
+            setCurrentMeeting({ id: meetingId, title: meetingTitle || 'Neues Meeting' });
           }
 
           // Show success toast with navigation option
-          toast.success('Recording saved successfully!', {
-            description: `${freshTranscripts.length} transcript segments saved.`,
+          toast.success('Aufnahme gespeichert!', {
+            description: `${freshTranscripts.length} Transkript-Segmente gespeichert.`,
             action: {
-              label: 'View Meeting',
+              label: 'Meeting anzeigen',
               onClick: () => {
                 router.push(`/meeting-details?id=${meetingId}`);
                 Analytics.trackButtonClick('view_meeting_from_toast', 'recording_complete');
@@ -1028,7 +1028,7 @@ export default function Home() {
             Analytics.trackPageView('meeting_details');
           }, 2000);
 
-          setMeetings([{ id: meetingId, title: meetingTitle || savedMeetingName || 'New Meeting' }, ...meetings]);
+          setMeetings([{ id: meetingId, title: meetingTitle || savedMeetingName || 'Neues Meeting' }, ...meetings]);
 
           // Track meeting completion analytics
           try {
@@ -1083,8 +1083,8 @@ export default function Home() {
 
         } catch (saveError) {
           console.error('Failed to save meeting to database:', saveError);
-          toast.error('Failed to save meeting', {
-            description: saveError instanceof Error ? saveError.message : 'Unknown error'
+          toast.error('Meeting konnte nicht gespeichert werden', {
+            description: saveError instanceof Error ? saveError.message : 'Unbekannter Fehler'
           });
           throw saveError;
         } finally {
@@ -1160,7 +1160,7 @@ export default function Home() {
     try {
       const fullTranscript = transcripts.map(t => t.text).join('\n');
       if (!fullTranscript.trim()) {
-        throw new Error('No transcript text available. Please add some text first.');
+        throw new Error('Kein Transkripttext verfügbar. Bitte füge zuerst Text hinzu.');
       }
 
       // Store the original transcript for regeneration
@@ -1192,7 +1192,7 @@ export default function Home() {
           console.log('Summary status:', result);
 
           if (result.status === 'error') {
-            setSummaryError(result.error || 'Unknown error');
+            setSummaryError(result.error || 'Unbekannter Fehler');
             setSummaryStatus('error');
             clearInterval(pollInterval);
             return;
@@ -1229,9 +1229,9 @@ export default function Home() {
         } catch (error) {
           console.error('Failed to get summary status:', error);
           if (error instanceof Error) {
-            setSummaryError(`Failed to get summary status: ${error.message}`);
+            setSummaryError(`Zusammenfassungsstatus konnte nicht abgerufen werden: ${error.message}`);
           } else {
-            setSummaryError('Failed to get summary status: Unknown error');
+            setSummaryError('Zusammenfassungsstatus konnte nicht abgerufen werden: Unbekannter Fehler');
           }
           setSummaryStatus('error');
           clearInterval(pollInterval);
@@ -1244,9 +1244,9 @@ export default function Home() {
     } catch (error) {
       console.error('Failed to generate summary:', error);
       if (error instanceof Error) {
-        setSummaryError(`Failed to generate summary: ${error.message}`);
+        setSummaryError(`Zusammenfassung konnte nicht erstellt werden: ${error.message}`);
       } else {
-        setSummaryError('Failed to generate summary: Unknown error');
+        setSummaryError('Zusammenfassung konnte nicht erstellt werden: Unbekannter Fehler');
       }
       setSummaryStatus('error');
     }
@@ -1269,17 +1269,17 @@ export default function Home() {
   const getSummaryStatusMessage = (status: SummaryStatus) => {
     switch (status) {
       case 'idle':
-        return 'Ready to generate summary';
+        return 'Bereit, eine Zusammenfassung zu erstellen';
       case 'processing':
-        return isRecording ? 'Processing transcript...' : 'Finalizing transcription...';
+        return isRecording ? 'Transkript wird verarbeitet…' : 'Transkription wird finalisiert…';
       case 'summarizing':
-        return 'Generating AI summary...';
+        return 'KI-Zusammenfassung wird erstellt…';
       case 'regenerating':
-        return 'Regenerating AI summary...';
+        return 'KI-Zusammenfassung wird neu erstellt…';
       case 'completed':
-        return 'Summary generated successfully!';
+        return 'Zusammenfassung erfolgreich erstellt!';
       case 'error':
-        return summaryError || 'An error occurred';
+        return summaryError || 'Ein Fehler ist aufgetreten';
       default:
         return '';
     }
@@ -1305,10 +1305,10 @@ export default function Home() {
       await writeTextFile(`${downloadPath}/${filename}`, JSON.stringify(transcriptData, null, 2));
 
       console.log('Transcript saved successfully to:', `${downloadPath}/${filename}`);
-      alert('Transcript downloaded successfully!');
+      alert('Transkript wurde erfolgreich heruntergeladen!');
     } catch (error) {
       console.error('Failed to save transcript:', error);
-      alert('Failed to save transcript. Please try again.');
+      alert('Transkript konnte nicht gespeichert werden. Bitte versuche es erneut.');
     }
   };
 
@@ -1326,14 +1326,14 @@ export default function Home() {
       }
 
       // Update state with uploaded data
-      setMeetingTitle(data.title || 'Uploaded Transcript');
+      setMeetingTitle(data.title || 'Hochgeladenes Transkript');
       setTranscripts(data.transcripts);
 
       // Generate summary for the uploaded transcript
       handleSummary(data.transcripts);
     } catch (error) {
       console.error('Error uploading transcript:', error);
-      alert('Failed to upload transcript. Please make sure the file format is correct.');
+      alert('Transkript konnte nicht hochgeladen werden. Bitte prüfe, ob das Dateiformat korrekt ist.');
     }
   };
 
@@ -1371,7 +1371,7 @@ export default function Home() {
           console.log('Summary status:', result);
 
           if (result.status === 'error') {
-            setSummaryError(result.error || 'Unknown error');
+            setSummaryError(result.error || 'Unbekannter Fehler');
             setSummaryStatus('error');
             clearInterval(pollInterval);
             return;
@@ -1406,7 +1406,7 @@ export default function Home() {
             setSummaryStatus('completed');
           } else if (result.status === 'error') {
             clearInterval(pollInterval);
-            throw new Error(result.error || 'Failed to generate summary');
+            throw new Error(result.error || 'Zusammenfassung konnte nicht erstellt werden');
           }
         } catch (error) {
           clearInterval(pollInterval);
@@ -1427,7 +1427,7 @@ export default function Home() {
       if (error instanceof Error) {
         setSummaryError(error.message);
       } else {
-        setSummaryError('An unexpected error occurred');
+        setSummaryError('Ein unerwarteter Fehler ist aufgetreten');
       }
       setSummaryStatus('error');
       setAiSummary(null);
@@ -1449,7 +1449,7 @@ export default function Home() {
       .join('\n');
     navigator.clipboard.writeText(fullTranscript);
 
-    toast.success("Transcript copied to clipboard");
+    toast.success("Transkript in die Zwischenablage kopiert");
   }, [transcripts]);
 
   const handleGenerateSummary = useCallback(async () => {
@@ -1465,7 +1465,7 @@ export default function Home() {
       if (error instanceof Error) {
         setSummaryError(error.message);
       } else {
-        setSummaryError('Failed to generate summary: Unknown error');
+        setSummaryError('Zusammenfassung konnte nicht erstellt werden: Unbekannter Fehler');
       }
     }
   }, [transcripts, generateAISummary]);
@@ -1507,7 +1507,7 @@ export default function Home() {
 
         // Auto-close modal if the downloaded model matches the selected one
         if (transcriptModelConfig.provider === 'localWhisper' && transcriptModelConfig.model === modelName) {
-          toast.success('Model ready! Closing window...', { duration: 1500 });
+          toast.success('Modell bereit! Fenster wird geschlossen…', { duration: 1500 });
           setTimeout(() => setShowModelSelector(false), 1500);
         }
       });
@@ -1520,7 +1520,7 @@ export default function Home() {
 
         // Auto-close modal if the downloaded model matches the selected one
         if (transcriptModelConfig.provider === 'parakeet' && transcriptModelConfig.model === modelName) {
-          toast.success('Model ready! Closing window...', { duration: 1500 });
+          toast.success('Modell bereit! Fenster wird geschlossen…', { duration: 1500 });
           setTimeout(() => setShowModelSelector(false), 1500);
         }
       });
@@ -1621,7 +1621,7 @@ export default function Home() {
     >
       <div className="px-4 pt-4">
         <TabsList>
-          <TabsTrigger value="recording">Recorder</TabsTrigger>
+          <TabsTrigger value="recording">Aufnahme</TabsTrigger>
           <TabsTrigger value="dashboard">Aufgaben-Dashboard</TabsTrigger>
         </TabsList>
       </div>
@@ -1636,14 +1636,14 @@ export default function Home() {
       {showErrorAlert && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <Alert className="max-w-md mx-4 border-red-200 bg-white shadow-xl">
-            <AlertTitle className="text-red-800">Recording Stopped</AlertTitle>
+            <AlertTitle className="text-red-800">Aufnahme beendet</AlertTitle>
             <AlertDescription className="text-red-700">
               {errorMessage}
               <button
                 onClick={() => setShowErrorAlert(false)}
                 className="ml-2 text-red-600 hover:text-red-800 underline"
               >
-                Dismiss
+                Schließen
               </button>
             </AlertDescription>
           </Alert>
@@ -1652,14 +1652,14 @@ export default function Home() {
       {showChunkDropWarning && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <Alert className="max-w-lg mx-4 border-yellow-200 bg-white shadow-xl">
-            <AlertTitle className="text-yellow-800">Transcription Performance Warning</AlertTitle>
+            <AlertTitle className="text-yellow-800">Warnung: Transkriptionsleistung</AlertTitle>
             <AlertDescription className="text-yellow-700">
               {chunkDropMessage}
               <button
                 onClick={() => setShowChunkDropWarning(false)}
                 className="ml-2 text-yellow-600 hover:text-yellow-800 underline"
               >
-                Dismiss
+                Schließen
               </button>
             </AlertDescription>
           </Alert>
@@ -1681,11 +1681,11 @@ export default function Home() {
                       onClick={() => {
                         handleCopyTranscript();
                       }}
-                      title="Copy Transcript"
+                      title="Transkript kopieren"
                     >
                       <Copy />
                       <span className='hidden md:inline'>
-                        Copy
+                        Kopieren
                       </span>
                     </Button>
                   )}
@@ -1694,11 +1694,11 @@ export default function Home() {
                       variant="outline"
                       size="sm"
                       onClick={() => setShowModelSelector(true)}
-                      title="Transcription Model Settings"
+                      title="Transkriptionsmodell-Einstellungen"
                     >
                       <Settings />
                       <span className='hidden md:inline'>
-                        Model
+                        Modell
                       </span>
                     </Button>
                   
@@ -1706,22 +1706,22 @@ export default function Home() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowDeviceSettings(true)}
-                    title="Input/Output devices selection"
+                    title="Ein-/Ausgabegeräte auswählen"
                   >
                     <MicrophoneIcon />
                     <span className='hidden md:inline'>
-                      Devices
+                      Geräte
                     </span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowLanguageSettings(true)}
-                    title="Language"
+                    title="Sprache"
                   >
                     <GlobeIcon />
                     <span className='hidden md:inline'>
-                      Language
+                      Sprache
                     </span>
                   </Button>
                   </ButtonGroup>
@@ -1739,33 +1739,33 @@ export default function Home() {
                         }`}
                         title={
                           summaryStatus === 'processing'
-                            ? 'Generating summary...'
+                            ? 'Zusammenfassung wird erstellt…'
                             : transcripts.length === 0
-                            ? 'No transcript available'
-                            : 'Generate AI Summary'
+                            ? 'Kein Transkript verfügbar'
+                            : 'KI-Zusammenfassung erstellen'
                         }
                       >
                         {summaryStatus === 'processing' ? (
                           <>
                             <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span className="text-sm">Processing...</span>
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                            <span className="text-sm">Verarbeiten…</span>
                           </>
                         ) : (
                           <>
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            <span className="text-sm">Generate Note</span>
+                            <span className="text-sm">Notiz erstellen</span>
                           </>
                         )}
                       </button>
                       <button
                         onClick={() => setShowModelSettings(true)}
                         className="px-3 py-2 border rounded-md transition-all duration-200 inline-flex items-center gap-2 shadow-sm bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300 active:bg-gray-200"
-                        title="Model Settings"
+                        title="Modell-Einstellungen"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -1790,33 +1790,33 @@ export default function Home() {
                       }`}
                       title={
                         summaryStatus === 'processing'
-                          ? 'Generating summary...'
+                          ? 'Zusammenfassung wird erstellt…'
                           : transcripts.length === 0
-                          ? 'No transcript available'
-                          : 'Generate AI Summary'
+                          ? 'Kein Transkript verfügbar'
+                          : 'KI-Zusammenfassung erstellen'
                       }
                     >
                       {summaryStatus === 'processing' ? (
                         <>
                           <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          <span className="text-sm">Processing...</span>
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                          <span className="text-sm">Verarbeiten…</span>
                         </>
                       ) : (
                         <>
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                           </svg>
-                          <span className="text-sm">Generate Note</span>
+                          <span className="text-sm">Notiz erstellen</span>
                         </>
                       )}
                     </button>
                     <button
                       onClick={() => setShowModelSettings(true)}
                       className="px-3 py-2 border rounded-md transition-all duration-200 inline-flex items-center gap-2 shadow-sm bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300 active:bg-gray-200"
-                      title="Model Settings"
+                      title="Modell-Einstellungen"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -1861,7 +1861,7 @@ export default function Home() {
           {/* {!isRecording && transcripts.length > 0 && !isMeetingActive && (
             <div className="p-4 border-t border-gray-200">
               <textarea
-                placeholder="Add context for AI summary. For example people involved, meeting overview, objective etc..."
+                placeholder="Zusätzlicher Kontext für die KI-Zusammenfassung (z. B. Beteiligte, Überblick, Ziel …)"
                 className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm min-h-[80px] resize-y"
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
@@ -1915,7 +1915,7 @@ export default function Home() {
                 <div className="w-2/3 max-w-[750px] flex justify-center">
                   <div className="bg-white rounded-lg shadow-lg px-4 py-2 flex items-center space-x-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
-                    <span className="text-sm text-gray-700">Finalizing transcription...</span>
+                    <span className="text-sm text-gray-700">Transkription wird finalisiert…</span>
                   </div>
                 </div>
               </div>
@@ -1932,7 +1932,7 @@ export default function Home() {
                 <div className="w-2/3 max-w-[750px] flex justify-center">
                   <div className="bg-white rounded-lg shadow-lg px-4 py-2 flex items-center space-x-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
-                    <span className="text-sm text-gray-700">Saving transcript...</span>
+                    <span className="text-sm text-gray-700">Transkript wird gespeichert…</span>
                   </div>
                 </div>
               </div>
@@ -1945,7 +1945,7 @@ export default function Home() {
               <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b">
-                  <h3 className="text-xl font-semibold text-gray-900">Preferences</h3>
+                  <h3 className="text-xl font-semibold text-gray-900">Einstellungen</h3>
                   <button
                     onClick={() => setShowModelSettings(false)}
                     className="text-gray-500 hover:text-gray-700"
@@ -1963,11 +1963,11 @@ export default function Home() {
 
                   {/* Divider */}
                   <div className="border-t pt-8">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">AI Model Configuration</h4>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">KI-Modell-Konfiguration</h4>
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Summarization Model
+                          Zusammenfassungsmodell
                         </label>
                         <div className="flex space-x-2">
                           <select
@@ -2003,7 +2003,7 @@ export default function Home() {
                       </div>
                       {modelConfig.provider === 'ollama' && (
                         <div>
-                          <h4 className="text-lg font-bold mb-4">Available Ollama Models</h4>
+                          <h4 className="text-lg font-bold mb-4">Verfügbare Ollama-Modelle</h4>
                           {error && (
                             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                               {error}
@@ -2018,8 +2018,8 @@ export default function Home() {
                                 onClick={() => setModelConfig(prev => ({ ...prev, model: model.name }))}
                               >
                                 <h3 className="font-bold">{model.name}</h3>
-                                <p className="text-gray-600">Size: {model.size}</p>
-                                <p className="text-gray-600">Modified: {model.modified}</p>
+                                <p className="text-gray-600">Größe: {model.size}</p>
+                                <p className="text-gray-600">Geändert: {model.modified}</p>
                               </div>
                             ))}
                           </div>
@@ -2035,7 +2035,7 @@ export default function Home() {
                     onClick={() => setShowModelSettings(false)}
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
-                    Done
+                    Fertig
                   </button>
                 </div>
               </div>
@@ -2047,7 +2047,7 @@ export default function Home() {
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Audio Device Settings</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Audio-Geräte</h3>
                   <button
                     onClick={() => setShowDeviceSettings(false)}
                     className="text-gray-500 hover:text-gray-700"
@@ -2067,16 +2067,16 @@ export default function Home() {
                 <div className="mt-6 flex justify-end">
                   <button
                     onClick={() => {
-                      const micDevice = selectedDevices.micDevice || 'Default';
-                      const systemDevice = selectedDevices.systemDevice || 'Default';
-                      toast.success("Devices selected", {
-                        description: `Microphone: ${micDevice}, System Audio: ${systemDevice}`
+                      const micDevice = selectedDevices.micDevice || 'Standard';
+                      const systemDevice = selectedDevices.systemDevice || 'Standard';
+                      toast.success("Geräte ausgewählt", {
+                        description: `Mikrofon: ${micDevice}, Systemaudio: ${systemDevice}`
                       });
                       setShowDeviceSettings(false);
                     }}
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
-                    Done
+                    Fertig
                   </button>
                 </div>
               </div>
@@ -2088,7 +2088,7 @@ export default function Home() {
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Language Settings</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Sprache</h3>
                   <button
                     onClick={() => setShowLanguageSettings(false)}
                     className="text-gray-500 hover:text-gray-700"
@@ -2111,7 +2111,7 @@ export default function Home() {
                     onClick={() => setShowLanguageSettings(false)}
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
-                    Done
+                    Fertig
                   </button>
                 </div>
               </div>
@@ -2125,7 +2125,7 @@ export default function Home() {
                 {/* Fixed Header */}
                 <div className="flex justify-between items-center p-6 pb-4 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {modelSelectorMessage ? 'Speech Recognition Setup Required' : 'Transcription Model Settings'}
+                    {modelSelectorMessage ? 'Spracherkennung: Einrichtung erforderlich' : 'Transkriptionsmodell-Einstellungen'}
                   </h3>
                   <button
                     onClick={() => {
@@ -2148,7 +2148,7 @@ export default function Home() {
                       <div className="flex items-start space-x-3">
                         <span className="text-yellow-600 text-xl">⚠️</span>
                         <div>
-                          <h4 className="font-medium text-yellow-800 mb-1">Model Required</h4>
+                          <h4 className="font-medium text-yellow-800 mb-1">Modell erforderlich</h4>
                           <p className="text-sm text-yellow-700">
                             {modelSelectorMessage}
                           </p>
@@ -2181,8 +2181,8 @@ export default function Home() {
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Show Confidence Indicators</p>
-                      <p className="text-xs text-gray-500">Display colored dots showing transcription confidence quality</p>
+                      <p className="text-sm font-medium text-gray-700">Konfidenzindikatoren anzeigen</p>
+                      <p className="text-xs text-gray-500">Farbige Punkte zur Transkriptions-Sicherheit anzeigen</p>
                     </div>
                   </div>
 
@@ -2194,7 +2194,7 @@ export default function Home() {
                     }}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                   >
-                    {modelSelectorMessage ? 'Cancel' : 'Done'}
+                    {modelSelectorMessage ? 'Abbrechen' : 'Fertig'}
                   </button>
                 </div>
               </div>

@@ -38,7 +38,7 @@ export function SummaryModelSettings({ refetchTrigger }: SummaryModelSettingsPro
       }
     } catch (error) {
       console.error('Failed to fetch model config:', error);
-      toast.error('Failed to load model settings');
+      toast.error('Modelleinstellungen konnten nicht geladen werden');
     }
   }, []);
 
@@ -91,18 +91,18 @@ export function SummaryModelSettings({ refetchTrigger }: SummaryModelSettingsPro
       const { emit } = await import('@tauri-apps/api/event');
       await emit('model-config-updated', config);
 
-      toast.success('Model settings saved successfully');
+      toast.success('Modelleinstellungen gespeichert');
     } catch (error) {
       console.error('Error saving model config:', error);
-      toast.error('Failed to save model settings');
+      toast.error('Modelleinstellungen konnten nicht gespeichert werden');
     }
   };
 
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-4">Summary Model Configuration</h3>
+      <h3 className="text-lg font-semibold mb-4">Zusammenfassungs-Modell</h3>
       <p className="text-sm text-gray-600 mb-6">
-        Configure the AI model used for generating meeting summaries.
+        Konfiguriere das KI-Modell, das für die Erstellung von Meeting-Zusammenfassungen verwendet wird.
       </p>
       <ModelSettingsModal
         modelConfig={modelConfig}

@@ -60,13 +60,13 @@ const SidebarContext = createContext<SidebarContextType | null>(null);
 export const useSidebar = () => {
   const context = useContext(SidebarContext);
   if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider');
+    throw new Error('useSidebar muss innerhalb eines SidebarProvider verwendet werden');
   }
   return context;
 };
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [currentMeeting, setCurrentMeeting] = useState<CurrentMeeting | null>({ id: 'intro-call', title: '+ New Call' });
+  const [currentMeeting, setCurrentMeeting] = useState<CurrentMeeting | null>({ id: 'intro-call', title: '+ Neues Meeting' });
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [meetings, setMeetings] = useState<CurrentMeeting[]>([]);
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
@@ -120,7 +120,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const baseItems: SidebarItem[] = [
     {
       id: 'meetings',
-      title: 'Meeting Notes',
+      title: 'Meeting-Notizen',
       type: 'folder' as const,
       children: [
         ...meetings.map(meeting => ({ id: meeting.id, title: meeting.title, type: 'file' as const }))
@@ -137,7 +137,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   // Update current meeting when on home page
   useEffect(() => {
     if (pathname === '/') {
-      setCurrentMeeting({ id: 'intro-call', title: '+ New Call' });
+      setCurrentMeeting({ id: 'intro-call', title: '+ Neues Meeting' });
     }
     setSidebarItems(baseItems);
   }, [pathname]);
@@ -211,7 +211,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
         });
         onUpdate({
           status: 'error',
-          error: 'Summary generation timed out after 10 minutes. Please try again or check your model configuration.'
+          error: 'Zeitüberschreitung: Die Zusammenfassung hat nach 10 Minuten abgebrochen. Bitte versuche es erneut oder prüfe deine Modellkonfiguration.'
         });
         return;
       }
@@ -249,7 +249,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
         // Report error to callback
         onUpdate({
           status: 'error',
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unbekannter Fehler'
         });
         clearInterval(pollInterval);
         setActiveSummaryPolls(prev => {

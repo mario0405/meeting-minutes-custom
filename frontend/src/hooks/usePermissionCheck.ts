@@ -95,7 +95,7 @@ export function usePermissionCheck() {
         hasMicrophone: false,
         hasSystemAudio: false,
         isChecking: false,
-        error: error instanceof Error ? error.message : 'Failed to check permissions',
+        error: error instanceof Error ? error.message : 'Berechtigungen konnten nicht geprüft werden',
       });
       return { hasMicrophone: false, hasSystemAudio: false };
     }

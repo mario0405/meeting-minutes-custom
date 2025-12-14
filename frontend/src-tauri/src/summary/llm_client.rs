@@ -126,13 +126,13 @@ pub async fn generate_summary(
                 "x-api-key",
                 api_key
                     .parse()
-                    .map_err(|_| "Invalid API key format".to_string())?,
+                    .map_err(|_| "Ungültiges API-Key-Format".to_string())?,
             );
             header_map.insert(
                 "anthropic-version",
                 "2023-06-01"
                     .parse()
-                    .map_err(|_| "Invalid anthropic version".to_string())?,
+                    .map_err(|_| "Ungültige Anthropic-Version".to_string())?,
             );
             ("https://api.anthropic.com/v1/messages".to_string(), header_map)
         }
@@ -144,14 +144,14 @@ pub async fn generate_summary(
             header::AUTHORIZATION,
             format!("Bearer {}", api_key)
                 .parse()
-                .map_err(|_| "Invalid authorization header".to_string())?,
+                .map_err(|_| "Ungültiger Authorization-Header".to_string())?,
         );
     }
     headers.insert(
         header::CONTENT_TYPE,
         "application/json"
             .parse()
-            .map_err(|_| "Invalid content type".to_string())?,
+            .map_err(|_| "Ungültiger Content-Type".to_string())?,
     );
 
     // Build request body based on provider
@@ -190,14 +190,14 @@ pub async fn generate_summary(
         .json(&request_body)
         .send()
         .await
-        .map_err(|e| format!("Failed to send request to LLM: {}", e))?;
+        .map_err(|e| format!("Anfrage an das LLM konnte nicht gesendet werden: {}", e))?;
 
     if !response.status().is_success() {
         let error_body = response
             .text()
             .await
-            .unwrap_or_else(|_| "Unknown error".to_string());
-        return Err(format!("LLM API request failed: {}", error_body));
+            .unwrap_or_else(|_| "Unbekannter Fehler".to_string());
+        return Err(format!("LLM-API-Anfrage fehlgeschlagen: {}", error_body));
     }
 
     // Parse response based on provider
@@ -205,14 +205,14 @@ pub async fn generate_summary(
         let chat_response = response
             .json::<ClaudeChatResponse>()
             .await
-            .map_err(|e| format!("Failed to parse LLM response: {}", e))?;
+            .map_err(|e| format!("LLM-Antwort konnte nicht geparst werden: {}", e))?;
 
         info!("🐞 LLM Response received from Claude");
 
         let content = chat_response
             .content
             .get(0)
-            .ok_or("No content in LLM response")?
+            .ok_or("Kein Inhalt in der LLM-Antwort")?
             .text
             .trim();
         Ok(content.to_string())
@@ -220,14 +220,14 @@ pub async fn generate_summary(
         let chat_response = response
             .json::<ChatResponse>()
             .await
-            .map_err(|e| format!("Failed to parse LLM response: {}", e))?;
+            .map_err(|e| format!("LLM-Antwort konnte nicht geparst werden: {}", e))?;
 
         info!("🐞 LLM Response received from {}", provider_name(provider));
 
         let content = chat_response
             .choices
             .get(0)
-            .ok_or("No content in LLM response")?
+            .ok_or("Kein Inhalt in der LLM-Antwort")?
             .message
             .content
             .trim();

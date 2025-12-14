@@ -35,7 +35,7 @@ export const useAudioPlayer = (audioPath: string | null) => {
       return true;
     } catch (error) {
       console.error('Error initializing AudioContext:', error);
-      setError('Failed to initialize audio');
+      setError('Audio konnte nicht initialisiert werden');
       return false;
     }
   };
@@ -78,7 +78,7 @@ export const useAudioPlayer = (audioPath: string | null) => {
       });
       
       if (!result || result.length === 0) {
-        throw new Error('Empty audio data received');
+        throw new Error('Leere Audiodaten empfangen');
       }
       
       console.log('Audio file read, size:', result.length, 'bytes');
@@ -103,7 +103,7 @@ export const useAudioPlayer = (audioPath: string | null) => {
           },
           error => {
             console.error('Audio decoding failed:', error);
-            reject(new Error('Failed to decode audio data: ' + error));
+            reject(new Error('Audiodaten konnten nicht dekodiert werden: ' + error));
           }
         );
       });
@@ -122,7 +122,7 @@ export const useAudioPlayer = (audioPath: string | null) => {
           stack: error.stack,
         });
       }
-      setError('Failed to load audio file');
+      setError('Audiodatei konnte nicht geladen werden');
     }
   };
 
@@ -159,16 +159,16 @@ export const useAudioPlayer = (audioPath: string | null) => {
       // Initialize context if needed
       const initialized = await initAudioContext();
       if (!initialized) {
-        throw new Error('Audio context initialization failed');
+        throw new Error('Initialisierung des Audio-Kontexts fehlgeschlagen');
       }
       if (!audioRef.current) {
-        throw new Error('Audio context is null after initialization');
+        throw new Error('Audio-Kontext ist nach der Initialisierung null');
       }
       if (!audioBufferRef.current) {
-        throw new Error('No audio buffer loaded - try loading the audio file first');
+        throw new Error('Kein Audio-Buffer geladen – bitte zuerst die Audiodatei laden');
       }
       if (audioRef.current.state !== 'running') {
-        throw new Error(`Audio context is in invalid state: ${audioRef.current.state}`);
+        throw new Error(`Audio-Kontext ist in einem ungültigen Zustand: ${audioRef.current.state}`);
       }
 
       // Stop any existing playback
@@ -232,7 +232,7 @@ export const useAudioPlayer = (audioPath: string | null) => {
       rafRef.current = requestAnimationFrame(updateTime);
     } catch (error) {
       console.error('Error during playback:', error);
-      setError('Failed to play audio');
+      setError('Audio konnte nicht abgespielt werden');
       stopPlayback();
     }
   };

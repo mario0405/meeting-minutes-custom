@@ -40,7 +40,7 @@ interface SummaryPanelProps {
   onSummaryChange: (summary: Summary) => void;
   onDirtyChange: (isDirty: boolean) => void;
   summaryError: string | null;
-  onRegenerateSummary: () => Promise<void>;
+  onRegenerateSummary: (customPrompt: string) => Promise<void>;
   getSummaryStatusMessage: (status: 'idle' | 'processing' | 'summarizing' | 'regenerating' | 'completed' | 'error') => string;
   availableTemplates: Array<{id: string, name: string, description: string}>;
   selectedTemplate: string;
@@ -154,9 +154,9 @@ export function SummaryPanel({
           </div>
           {/* Loading spinner */}
           <div className="flex items-center justify-center flex-1">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-              <p className="text-gray-600">Generating AI Summary...</p>
+              <div className="text-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+              <p className="text-gray-600">KI-Zusammenfassung wird erstellt…</p>
             </div>
           </div>
         </div>
@@ -189,10 +189,10 @@ export function SummaryPanel({
         <div className="flex-1 overflow-y-auto min-h-0">
           {summaryResponse && (
             <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4 max-h-1/3 overflow-y-auto">
-              <h3 className="text-lg font-semibold mb-2">Meeting Summary</h3>
+              <h3 className="text-lg font-semibold mb-2">Meeting-Zusammenfassung</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white p-4 rounded-lg shadow-sm">
-                  <h4 className="font-medium mb-1">Key Points</h4>
+                  <h4 className="font-medium mb-1">Wichtige Punkte</h4>
                   <ul className="list-disc pl-4">
                     {summaryResponse.summary.key_points.blocks.map((block, i) => (
                       <li key={i} className="text-sm">{block.content}</li>
@@ -200,7 +200,7 @@ export function SummaryPanel({
                   </ul>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm mt-4">
-                  <h4 className="font-medium mb-1">Action Items</h4>
+                  <h4 className="font-medium mb-1">Aufgaben</h4>
                   <ul className="list-disc pl-4">
                     {summaryResponse.summary.action_items.blocks.map((block, i) => (
                       <li key={i} className="text-sm">{block.content}</li>
@@ -208,7 +208,7 @@ export function SummaryPanel({
                   </ul>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm mt-4">
-                  <h4 className="font-medium mb-1">Decisions</h4>
+                  <h4 className="font-medium mb-1">Entscheidungen</h4>
                   <ul className="list-disc pl-4">
                     {summaryResponse.summary.decisions.blocks.map((block, i) => (
                       <li key={i} className="text-sm">{block.content}</li>
@@ -216,7 +216,7 @@ export function SummaryPanel({
                   </ul>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm mt-4">
-                  <h4 className="font-medium mb-1">Main Topics</h4>
+                  <h4 className="font-medium mb-1">Hauptthemen</h4>
                   <ul className="list-disc pl-4">
                     {summaryResponse.summary.main_topics.blocks.map((block, i) => (
                       <li key={i} className="text-sm">{block.content}</li>
@@ -226,7 +226,7 @@ export function SummaryPanel({
               </div>
               {summaryResponse.raw_summary ? (
                 <div className="mt-4">
-                  <h4 className="font-medium mb-1">Full Summary</h4>
+                  <h4 className="font-medium mb-1">Vollständige Zusammenfassung</h4>
                   <p className="text-sm whitespace-pre-wrap">{summaryResponse.raw_summary}</p>
                 </div>
               ) : null}
@@ -243,7 +243,7 @@ export function SummaryPanel({
               error={summaryError}
               onRegenerateSummary={() => {
                 Analytics.trackButtonClick('regenerate_summary', 'meeting_details');
-                onRegenerateSummary();
+                onRegenerateSummary(customPrompt);
               }}
               meeting={{
                 id: meeting.id,
