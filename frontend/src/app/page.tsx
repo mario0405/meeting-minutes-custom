@@ -1472,8 +1472,25 @@ export default function Home() {
   }, [transcripts, generateAISummary]);
 
   // Post-recording notes modal handlers
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+
   const handleConfirmPostRecordingNotes = async () => {
     try {
+      setIsSavingNotes(true);
+      // Save notes to meeting (if meeting Id available and notes present)
+      if (pendingSavedMeetingId && postRecordingNotes && postRecordingNotes.trim().length > 0) {
+        try {
+          await invoke('api_save_meeting_summary_prompt', {
+            meetingId: pendingSavedMeetingId,
+            summaryPrompt: postRecordingNotes.trim(),
+          });
+        } catch (saveErr) {
+          console.error('Failed to save meeting notes to backend:', saveErr);
+          toast.error('Notizen konnten nicht gespeichert werden. Zusammenfassung wird trotzdem erstellt.');
+        }
+      }
+
+      // Close modal and create summary using notes if provided
       setShowPostRecordingNotesModal(false);
       if (postRecordingNotes && postRecordingNotes.trim().length > 0) {
         await generateAISummary(postRecordingNotes.trim());
@@ -1482,7 +1499,10 @@ export default function Home() {
       }
     } catch (err) {
       console.error('Failed to start AI summary generation with post-recording notes', err);
+      toast.error('Zusammenfassung konnte nicht erstellt werden');
     } finally {
+      setIsSavingNotes(false);
++      setPostRecordingNotes('');
       if (pendingSavedMeetingId) {
         router.push(`/meeting-details?id=${pendingSavedMeetingId}`);
         Analytics.trackPageView('meeting_details');
@@ -1491,12 +1511,21 @@ export default function Home() {
     }
   };
 
-  const handleSkipPostRecordingNotes = () => {
-    setShowPostRecordingNotesModal(false);
-    if (pendingSavedMeetingId) {
-      router.push(`/meeting-details?id=${pendingSavedMeetingId}`);
-      Analytics.trackPageView('meeting_details');
-      setPendingSavedMeetingId(null);
+  const handleSkipPostRecordingNotes = async () => {
+    // Create summary without notes and navigate
+    try {
+      setShowPostRecordingNotesModal(false);
+      await generateAISummary('');
+    } catch (err) {
+      console.error('Failed to create summary without notes', err);
+      toast.error('Zusammenfassung konnte nicht erstellt werden');
+    } finally {
++      setPostRecordingNotes('');
+      if (pendingSavedMeetingId) {
+        router.push(`/meeting-details?id=${pendingSavedMeetingId}`);
+        Analytics.trackPageView('meeting_details');
+        setPendingSavedMeetingId(null);
+      }
     }
   };
 
@@ -2337,8 +2366,23 @@ export default function Home() {
               className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm min-h-[120px] resize-y"
             />
             <div className="mt-4 flex justify-end space-x-2">
-              <button onClick={handleSkipPostRecordingNotes} className="px-3 py-2 bg-gray-100 rounded-md text-sm text-gray-700 hover:bg-gray-200">Ohne Notizen fortfahren</button>
-              <button onClick={handleConfirmPostRecordingNotes} className="px-3 py-2 bg-blue-600 rounded-md text-sm text-white hover:bg-blue-700">Notiz speichern und Zusammenfassung erstellen</button>
+              <button
+                onClick={handleSkipPostRecordingNotes}
+                disabled={isSavingNotes}
+                className="px-3 py-2 bg-gray-100 rounded-md text-sm text-gray-700 hover:bg-gray-200 disabled:opacity-60"
+              >
+                Zusammenfassung ohne Notizen erstellen
+              </button>
+              <button
+                onClick={handleConfirmPostRecordingNotes}
+                disabled={isSavingNotes}
+                className="px-3 py-2 bg-blue-600 rounded-md text-sm text-white hover:bg-blue-700 disabled:opacity-60 flex items-center gap-2"
+              >
+                {isSavingNotes ? (
+                  <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                ) : null}
+                Notiz speichern und Zusammenfassung erstellen
+              </button>
             </div>
           </div>
         </div>
