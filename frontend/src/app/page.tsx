@@ -87,6 +87,9 @@ export default function Home() {
   const [showChunkDropWarning, setShowChunkDropWarning] = useState(false);
   const [chunkDropMessage, setChunkDropMessage] = useState('');
   const [isSavingTranscript, setIsSavingTranscript] = useState(false);
+  const [showPostRecordingNotesModal, setShowPostRecordingNotesModal] = useState(false);
+  const [postRecordingNotes, setPostRecordingNotes] = useState('');
+  const [pendingSavedMeetingId, setPendingSavedMeetingId] = useState<string | null>(null);
   const [isRecordingDisabled, setIsRecordingDisabled] = useState(false);
   const [selectedDevices, setSelectedDevices] = useState<SelectedDevices>({
     micDevice: null,
@@ -1022,11 +1025,9 @@ export default function Home() {
             duration: 10000,
           });
 
-          // Auto-navigate after a short delay
-          setTimeout(() => {
-            router.push(`/meeting-details?id=${meetingId}`);
-            Analytics.trackPageView('meeting_details');
-          }, 2000);
+          // Show post-recording notes modal to optionally collect user notes
+          setPendingSavedMeetingId(meetingId);
+          setShowPostRecordingNotesModal(true);
 
           setMeetings([{ id: meetingId, title: meetingTitle || savedMeetingName || 'Neues Meeting' }, ...meetings]);
 
@@ -1469,6 +1470,35 @@ export default function Home() {
       }
     }
   }, [transcripts, generateAISummary]);
+
+  // Post-recording notes modal handlers
+  const handleConfirmPostRecordingNotes = async () => {
+    try {
+      setShowPostRecordingNotesModal(false);
+      if (postRecordingNotes && postRecordingNotes.trim().length > 0) {
+        await generateAISummary(postRecordingNotes.trim());
+      } else {
+        await generateAISummary('');
+      }
+    } catch (err) {
+      console.error('Failed to start AI summary generation with post-recording notes', err);
+    } finally {
+      if (pendingSavedMeetingId) {
+        router.push(`/meeting-details?id=${pendingSavedMeetingId}`);
+        Analytics.trackPageView('meeting_details');
+        setPendingSavedMeetingId(null);
+      }
+    }
+  };
+
+  const handleSkipPostRecordingNotes = () => {
+    setShowPostRecordingNotesModal(false);
+    if (pendingSavedMeetingId) {
+      router.push(`/meeting-details?id=${pendingSavedMeetingId}`);
+      Analytics.trackPageView('meeting_details');
+      setPendingSavedMeetingId(null);
+    }
+  };
 
   // Handle transcript configuration save
   const handleSaveTranscriptConfig = async (config: TranscriptModelProps) => {
@@ -2290,6 +2320,30 @@ export default function Home() {
         {/*     </div> */}
         {/*   )} */}        {/* </div> */}
       </div>
+
+      {/* Post-recording notes modal */}
+      {showPostRecordingNotesModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
+            <div className="flex items-start justify-between">
+              <h3 className="text-lg font-semibold mb-2">Notizen zum Meeting (optional)</h3>
+              <button onClick={handleSkipPostRecordingNotes} className="text-gray-500 hover:text-gray-700">Schließen</button>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">Füge hier optionale Notizen hinzu, die in die KI-Zusammenfassung einfließen sollen (z. B. wichtige Punkte, Kontext oder Hinweise zu Verantwortlichen).</p>
+            <textarea
+              value={postRecordingNotes}
+              onChange={(e) => setPostRecordingNotes(e.target.value)}
+              placeholder="Zusätzliche Notizen für die Zusammenfassung (optional, auf Deutsch)"
+              className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm min-h-[120px] resize-y"
+            />
+            <div className="mt-4 flex justify-end space-x-2">
+              <button onClick={handleSkipPostRecordingNotes} className="px-3 py-2 bg-gray-100 rounded-md text-sm text-gray-700 hover:bg-gray-200">Ohne Notizen fortfahren</button>
+              <button onClick={handleConfirmPostRecordingNotes} className="px-3 py-2 bg-blue-600 rounded-md text-sm text-white hover:bg-blue-700">Notiz speichern und Zusammenfassung erstellen</button>
+            </div>
+          </div>
+        </div>
+      )}
+
         </motion.div>
       </TabsContent>
 

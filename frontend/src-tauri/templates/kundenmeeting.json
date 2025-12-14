@@ -3,18 +3,38 @@
   "description": "Kurze Notizen für Kundenmeetings (Titel, Kunde, Kurz-Zusammenfassung, Aufgaben).",
   "sections": [
     {
+      "title": "Titel des Meetings",
+      "instruction": "Gebe den Titel des Meetings an, falls im Transkript genannt. Falls nicht vorhanden, schreibe 'Keine Angaben in diesem Abschnitt.'",
+      "format": "paragraph"
+    },
+    {
       "title": "Kunde",
       "instruction": "Name des Kunden und – falls genannt – Firma/Organisation sowie ggf. Ansprechpartner (nur aus dem Transkript, nichts raten).",
       "format": "paragraph"
     },
     {
-      "title": "Kurz-Zusammenfassung",
-      "instruction": "Sehr kurze Zusammenfassung in maximal 2 Sätzen (was wurde besprochen, was wurde vereinbart?).",
+      "title": "Datum & Uhrzeit",
+      "instruction": "Gebe Datum und Uhrzeit des Meetings an, falls im Transkript erwähnt. Falls nicht vorhanden, schreibe 'Keine Angaben in diesem Abschnitt.'",
       "format": "paragraph"
     },
     {
+      "title": "Beteiligte",
+      "instruction": "Liste alle namentlich erwähnten Personen oder eindeutig identifizierbaren Teilnehmer. Wenn keine Namen vorhanden sind, schreibe 'Keine Angaben in diesem Abschnitt.'",
+      "format": "list"
+    },
+    {
+      "title": "Kurz-Zusammenfassung",
+      "instruction": "Sehr kurze Zusammenfassung in maximal 2 Sätzen (Was wurde besprochen? Welche Themen standen im Mittelpunkt?).",
+      "format": "paragraph"
+    },
+    {
+      "title": "Entscheidungen",
+      "instruction": "Liste klare Entscheidungen (Was wurde beschlossen?). Wenn keine Entscheidungen getroffen wurden, schreibe 'Keine Angaben in diesem Abschnitt.'",
+      "format": "list"
+    },
+    {
       "title": "Aufgaben",
-      "instruction": "Liste aller Aufgaben/To-Dos. Immer angeben, wer was macht oder gemacht hat. Wenn ein Status erkennbar ist, ergänze ihn (z. B. offen/erledigt). Nutze kurze Bulletpoints.",
+      "instruction": "Liste alle Aufgaben/To-Dos. Für jede Aufgabe: kurze Beschreibung und verantwortliche Person (Name). Wenn Informationen fehlen, schreibe 'Keine Angaben in diesem Abschnitt.'",
       "format": "list"
     }
   ]
