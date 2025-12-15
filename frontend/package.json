@@ -4,7 +4,8 @@
     "private": true,
     "main": "electron/main.js",
     "scripts": {
-        "dev": "next dev -p 3118",
+        "dev": "pnpm build && pnpm start -p 3118",
+        "start:static": "pnpm build && pnpm start -p 3118",
         "build": "next build",
         "export": "next export",
         "start": "next start -p 3118",
@@ -94,6 +95,7 @@
         "sharp": "^0.34.5",
         "tailwindcss": "^3.4.1",
         "typescript": "^5.7.2",
-        "wait-on": "^7.2.0"
+        "wait-on": "^7.2.0",
+        "chokidar": "^3.5.3"
     }
 }
