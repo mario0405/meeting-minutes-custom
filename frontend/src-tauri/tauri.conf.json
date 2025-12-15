@@ -6,7 +6,7 @@
     "build": {
         "frontendDist": "../out",
         "devUrl": "http://127.0.0.1:3118",
-        "beforeDevCommand": "echo 'tauri-static-managed'",
+        "beforeDevCommand": "node ../scripts/start-static-server.js",
         "beforeBuildCommand": "pnpm build"
     },
 
