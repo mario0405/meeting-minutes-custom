@@ -23,15 +23,24 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # List explicit directories and files. Disable cone-mode so
+          # individual files (like package.json) are allowed.
           sparse-checkout: |
-            frontend
+            frontend/
+            .github/workflows/release.yml
+            package.json
+            README.md
+          sparse-checkout-cone-mode: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: pnpm
-          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install pnpm
+        run: |
+          echo "Installing pnpm globally"
+          npm install -g pnpm@9
 
       - name: Ensure pnpm is available
         run: |
