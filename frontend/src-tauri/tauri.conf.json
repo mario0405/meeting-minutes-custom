@@ -5,8 +5,6 @@
     "identifier": "com.protocolito.ai",
     "build": {
         "frontendDist": "../out",
-        "devUrl": "http://127.0.0.1:3118",
-        "beforeDevCommand": "node ../scripts/start-static-server.js",
         "beforeBuildCommand": "pnpm build"
     },
 
