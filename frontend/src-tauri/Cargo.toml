@@ -53,7 +53,7 @@ openblas = ["whisper-rs/openblas"] # Optimized BLAS (Auto-enabled on Windows/Lin
 openmp = ["whisper-rs/openmp"]     # OpenMP parallel processing
 
 [build-dependencies]
-tauri-build = { version = "2.9.5", features = [] }
+tauri-build = { version = "2.5.3", features = [] }
 reqwest = { version = "0.11", features = ["blocking", "multipart", "json", "stream"] }
 which = "6.0.1"
 
@@ -147,7 +147,7 @@ tauri-plugin-notification = "2.3.3"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"
-tauri-plugin-log = { version = "2.9.0", features = ["colored"] }
+tauri-plugin-log = { version = "2.7.1", features = ["colored"] }
 anyhow = "1.0"
 time = { version = "0.3", features = ["formatting"] }
 reqwest = { version = "0.11", features = ["multipart", "json"] }

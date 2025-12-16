@@ -5,12 +5,16 @@ on:
     types: [published]
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build bundles for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
@@ -20,21 +24,19 @@ jobs:
         with:
           fetch-depth: 0
           sparse-checkout: |
-            frontend/**
-            frontend/**/*
-            .github/workflows/release.yml
-            package.json
-            README.md
+            frontend
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Enable Corepack and install pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@latest --activate
+          corepack prepare pnpm@9 --activate
 
       - name: Install dependencies
         run: |
@@ -42,16 +44,24 @@ jobs:
           pnpm install --no-frozen-lockfile
 
       - name: Setup Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Install Linux build deps
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libssl-dev pkg-config libgtk-3-dev build-essential
+          sudo apt-get install -y \
+            build-essential \
+            libasound2-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libssl-dev \
+            libsqlite3-dev \
+            patchelf \
+            pkg-config \
+            rpm
 
       - name: Install macOS build deps
         if: matrix.os == 'macos-latest'
@@ -64,13 +74,9 @@ jobs:
         run: |
           choco install openssl.light -y || true
 
-      - name: Build frontend (static)
-        run: |
-          cd frontend
-          pnpm build || true
-          pnpm export || true
-
       - name: Build desktop bundles (Tauri)
+        env:
+          NO_STRIP: ${{ matrix.os == 'ubuntu-latest' && 'true' || '' }}
         run: |
           cd frontend
           pnpm tauri:build:cpu
@@ -79,39 +85,27 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tauri-bundles-${{ matrix.os }}
-          path: frontend/target/release/bundle/**
+          path: frontend/src-tauri/target/release/bundle/**
 
   publish:
     name: Assemble and publish release assets
     needs: build
     runs-on: ubuntu-latest
+    if: github.event_name == 'release'
 
     steps:
-      - name: Download Linux artifacts
+      - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: tauri-bundles-ubuntu-latest
-          path: dist/ubuntu || true
-
-      - name: Download Windows artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: tauri-bundles-windows-latest
-          path: dist/windows || true
-
-      - name: Download macOS artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: tauri-bundles-macos-latest
-          path: dist/macos || true
+          path: dist
 
       - name: List collected artifacts
         run: ls -R dist || true
 
       - name: Create GitHub release assets
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/**
+            dist/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
