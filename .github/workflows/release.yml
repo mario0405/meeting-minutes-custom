@@ -9,13 +9,22 @@ jobs:
   build:
     name: Build bundles for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - name: Checkout
+      - name: Checkout (sparse, frontend only)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          sparse-checkout: |
+            frontend/**
+            frontend/**/*
+            .github/workflows/release.yml
+            package.json
+            README.md
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
