@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd frontend
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
 
       - name: Setup Rust toolchain
         uses: actions-rs/toolchain@v1
