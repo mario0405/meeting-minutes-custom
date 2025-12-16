@@ -33,10 +33,19 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
 
-      - name: Enable Corepack and install pnpm
+      - name: Ensure pnpm is available
         run: |
-          corepack enable
-          corepack prepare pnpm@9 --activate
+          # Enable corepack (shipped with Node >=16) and try to prepare pnpm,
+          # fall back to installing pnpm globally if needed.
+          corepack enable || true
+          corepack prepare pnpm@9 --activate || true
+          if ! command -v pnpm >/dev/null 2>&1; then
+            echo "pnpm not found via corepack — installing pnpm globally"
+            npm install -g pnpm@9
+          fi
+          echo "node: $(node --version)"
+          echo "npm: $(npm --version)"
+          echo "pnpm: $(pnpm --version)"
 
       - name: Install dependencies
         run: |
