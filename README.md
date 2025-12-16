@@ -118,6 +118,31 @@ Build from source following our detailed guides:
 - [Building on Linux](docs/building_in_linux.md)
 - [General Build Instructions](docs/BUILDING.md)
 
+---
+
+## Releases & Distribution ✅
+
+We publish desktop builds as GitHub Releases so users can download a ready-to-run installer or bundle for their OS.
+
+Maintainer workflow (automated):
+
+- Create a new GitHub Release (or push a version tag `vX.Y.Z`).
+- The GitHub Actions workflow at `.github/workflows/release.yml` will run on the `release` event, build platform-specific bundles using the appropriate runner (Windows/macOS/Linux), and attach bundles to the Release as assets.
+
+Notes for maintainers:
+
+- The workflow builds the frontend and runs `pnpm tauri:build:cpu` to produce packaged artifacts located at `frontend/target/release/bundle/**`.
+- If you need code-signing or notarization (macOS or Windows), add your signing secrets to GitHub Secrets and I can add the signing steps to the workflow.
+- Optionally add checksum generation (SHA256) if you want users to verify downloads; I can add this to the workflow.
+
+How users install:
+
+- **Windows:** Download the `.msi`/`.exe` asset and run the installer.
+- **macOS:** Download the `.dmg` or `.pkg`. (You may need to allow installation from identified developers.)
+- **Linux:** Download the `.AppImage` or `.deb` and install/run according to your distro.
+
+If you'd like, I can add checksum uploads, signing steps, and example release notes automation.
+
 **Quick start:**
 
 ```bash
