@@ -4,12 +4,12 @@
   "sections": [
     {
       "title": "Titel des Meetings",
-      "instruction": "Gebe den Titel des Meetings an, falls im Transkript genannt. Falls nicht vorhanden, schreibe 'Keine Angaben in diesem Abschnitt.'",
+      "instruction": "Gebe den im Transkript explizit genannten Titel/Betreff des Meetings an (falls vorhanden). Dieser Abschnitt ist NICHT der von dir generierte Haupttitel (`# ...`). Falls kein expliziter Titel genannt ist, schreibe 'Keine Angaben in diesem Abschnitt.'",
       "format": "paragraph"
     },
     {
       "title": "Kunde",
-      "instruction": "Name des Kunden und – falls genannt – Firma/Organisation sowie ggf. Ansprechpartner (nur aus dem Transkript, nichts raten).",
+      "instruction": "Name des Kunden und – falls genannt – Firma/Organisation sowie ggf. Ansprechpartner (nur aus dem Transkript, nichts raten). Falls nicht vorhanden, schreibe 'Keine Angaben in diesem Abschnitt.'",
       "format": "paragraph"
     },
     {
@@ -19,22 +19,22 @@
     },
     {
       "title": "Beteiligte",
-      "instruction": "Liste alle namentlich erwähnten Personen oder eindeutig identifizierbaren Teilnehmer. Wenn keine Namen vorhanden sind, schreibe 'Keine Angaben in diesem Abschnitt.'",
+      "instruction": "Liste alle namentlich erwähnten Personen oder eindeutig identifizierbaren Teilnehmer. Wenn keine Namen vorhanden sind, schreibe 'Keine Angaben in diesem Abschnitt.' als einzelne Zeile (kein Bulletpoint).",
       "format": "list"
     },
     {
       "title": "Kurz-Zusammenfassung",
-      "instruction": "Sehr kurze Zusammenfassung in maximal 2 Sätzen (Was wurde besprochen? Welche Themen standen im Mittelpunkt?).",
+      "instruction": "Sehr kurze Zusammenfassung in maximal 2 Sätzen (Was wurde besprochen? Welche Themen standen im Mittelpunkt?). Keine Bulletpoints/Nummerierungen, nur ein kurzer Absatz.",
       "format": "paragraph"
     },
     {
       "title": "Entscheidungen",
-      "instruction": "Liste klare Entscheidungen (Was wurde beschlossen?). Wenn keine Entscheidungen getroffen wurden, schreibe 'Keine Angaben in diesem Abschnitt.'",
+      "instruction": "Liste klare Entscheidungen (Was wurde beschlossen?). Wenn keine Entscheidungen getroffen wurden, schreibe 'Keine Angaben in diesem Abschnitt.' als einzelne Zeile (kein Bulletpoint).",
       "format": "list"
     },
     {
       "title": "Aufgaben",
-      "instruction": "Liste alle Aufgaben/To-Dos. Für jede Aufgabe: kurze Beschreibung und verantwortliche Person (Name). Wenn Informationen fehlen, schreibe 'Keine Angaben in diesem Abschnitt.'",
+      "instruction": "Liste alle Aufgaben/To-Dos als Bulletpoints. Wenn eine verantwortliche Person eindeutig genannt ist: `Name: Aufgabe (Termin)`; wenn keine Person genannt ist: `Aufgabe (Termin)`. Keine weiteren Präfixe/Labels. Termin: Wenn im Quelltext erkennbar, übernehme ihn; sonst schreibe `(ohne Termin)`. Optional: Status (z. B. offen/erledigt/in Arbeit) nach dem Termin, z. B. `(ohne Termin, offen)`. Wenn es keine Aufgaben gibt, schreibe 'Keine Angaben in diesem Abschnitt.' als einzelne Zeile (kein Bulletpoint).",
       "format": "list"
     }
   ]

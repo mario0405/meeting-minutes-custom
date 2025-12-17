@@ -4,12 +4,12 @@
   "sections": [
     {
       "title": "Kurz-Zusammenfassung",
-      "instruction": "Sehr kurze Zusammenfassung des Meetings in maximal 2 Sätzen (Worum ging es? Was ist das wichtigste Ergebnis?).",
+      "instruction": "Sehr kurze Zusammenfassung des Meetings in maximal 2 Sätzen (Worum ging es? Was ist das wichtigste Ergebnis?). Keine Bulletpoints/Nummerierungen, nur ein kurzer Absatz.",
       "format": "paragraph"
     },
     {
       "title": "Aufgaben",
-      "instruction": "Liste aller Aufgaben/To-Dos. Immer angeben, wer was macht oder gemacht hat. Wenn ein Status erkennbar ist, ergänze ihn (z. B. offen/erledigt). Nutze kurze Bulletpoints.",
+      "instruction": "Liste aller Aufgaben/To-Dos als Bulletpoints. Wenn eine verantwortliche Person eindeutig genannt ist: `Name: Aufgabe (Termin)`; wenn keine Person genannt ist: `Aufgabe (Termin)`. Keine weiteren Präfixe/Labels. Termin: Wenn im Quelltext erkennbar, übernehme ihn; sonst schreibe `(ohne Termin)`. Optional: Status (z. B. offen/erledigt/in Arbeit) nach dem Termin, z. B. `(ohne Termin, offen)`.",
       "format": "list"
     }
   ]

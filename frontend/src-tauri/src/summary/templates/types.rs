@@ -89,8 +89,8 @@ impl Template {
 
         for section in &self.sections {
             instructions.push_str(&format!(
-                "- **Für den Abschnitt '{}'**: {}.\n",
-                section.title, section.instruction
+                "- **Für den Abschnitt '{}' (Format: `{}`)**: {}.\n",
+                section.title, section.format, section.instruction
             ));
 
             // Add item format instructions if present
