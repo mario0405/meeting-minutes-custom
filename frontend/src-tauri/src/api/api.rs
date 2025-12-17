@@ -918,7 +918,7 @@ pub async fn api_save_transcript<R: Runtime>(
 /// Opens the meeting's recording folder in the system file explorer
 #[tauri::command]
 pub async fn open_meeting_folder<R: Runtime>(
-    app: AppHandle<R>,
+    _app: AppHandle<R>,
     state: tauri::State<'_, AppState>,
     meeting_id: String,
 ) -> Result<(), String> {
@@ -926,58 +926,57 @@ pub async fn open_meeting_folder<R: Runtime>(
 
     let pool = state.db_manager.pool();
 
-    // Get meeting with folder_path
-    let meeting: Option<MeetingModel> = sqlx::query_as(
-        "SELECT id, title, created_at, updated_at, folder_path FROM meetings WHERE id = ?",
+    // Fetch only the folder path (avoids coupling this command to the full MeetingModel schema)
+    let folder_path: Option<Option<String>> = sqlx::query_scalar(
+        "SELECT folder_path FROM meetings WHERE id = ?",
     )
     .bind(&meeting_id)
     .fetch_optional(pool)
     .await
     .map_err(|e| format!("Database error: {}", e))?;
 
-    match meeting {
-        Some(m) => {
-            if let Some(folder_path) = m.folder_path {
-                log_info!("Opening meeting folder: {}", folder_path);
+    match folder_path {
+        Some(Some(folder_path)) => {
+            log_info!("Opening meeting folder: {}", folder_path);
 
-                // Verify folder exists
-                let path = std::path::Path::new(&folder_path);
-                if !path.exists() {
-                    log_warn!("Folder path does not exist: {}", folder_path);
-                    return Err(format!("Recording folder not found: {}", folder_path));
-                }
-
-                // Open folder based on OS
-                #[cfg(target_os = "macos")]
-                {
-                    std::process::Command::new("open")
-                        .arg(&folder_path)
-                        .spawn()
-                        .map_err(|e| format!("Failed to open folder: {}", e))?;
-                }
-
-                #[cfg(target_os = "windows")]
-                {
-                    std::process::Command::new("explorer")
-                        .arg(&folder_path)
-                        .spawn()
-                        .map_err(|e| format!("Failed to open folder: {}", e))?;
-                }
-
-                #[cfg(target_os = "linux")]
-                {
-                    std::process::Command::new("xdg-open")
-                        .arg(&folder_path)
-                        .spawn()
-                        .map_err(|e| format!("Failed to open folder: {}", e))?;
-                }
-
-                log_info!("Successfully opened folder: {}", folder_path);
-                Ok(())
-            } else {
-                log_warn!("Meeting {} has no folder_path set", meeting_id);
-                Err("Recording folder path not available for this meeting".to_string())
+            // Verify folder exists
+            let path = std::path::Path::new(&folder_path);
+            if !path.exists() {
+                log_warn!("Folder path does not exist: {}", folder_path);
+                return Err(format!("Recording folder not found: {}", folder_path));
             }
+
+            // Open folder based on OS
+            #[cfg(target_os = "macos")]
+            {
+                std::process::Command::new("open")
+                    .arg(&folder_path)
+                    .spawn()
+                    .map_err(|e| format!("Failed to open folder: {}", e))?;
+            }
+
+            #[cfg(target_os = "windows")]
+            {
+                std::process::Command::new("explorer")
+                    .arg(&folder_path)
+                    .spawn()
+                    .map_err(|e| format!("Failed to open folder: {}", e))?;
+            }
+
+            #[cfg(target_os = "linux")]
+            {
+                std::process::Command::new("xdg-open")
+                    .arg(&folder_path)
+                    .spawn()
+                    .map_err(|e| format!("Failed to open folder: {}", e))?;
+            }
+
+            log_info!("Successfully opened folder: {}", folder_path);
+            Ok(())
+        }
+        Some(None) => {
+            log_warn!("Meeting {} has no folder_path set", meeting_id);
+            Err("Recording folder path not available for this meeting".to_string())
         }
         None => {
             log_warn!("Meeting not found: {}", meeting_id);
