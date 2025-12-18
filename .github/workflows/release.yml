@@ -1,8 +1,9 @@
 name: Build and publish Tauri releases
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch: {}
 
 permissions:
@@ -19,47 +20,27 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - name: Checkout (sparse, frontend only)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # List explicit directories and files. Disable cone-mode so
-          # individual files (like package.json) are allowed.
-          sparse-checkout: |
-            frontend/
-            .github/workflows/release.yml
-            package.json
-            README.md
-          sparse-checkout-cone-mode: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install pnpm
-        run: |
-          echo "Installing pnpm globally"
-          npm install -g pnpm@9
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '9'
 
-      - name: Ensure pnpm is available
-        run: |
-          # Enable corepack (shipped with Node >=16) and try to prepare pnpm,
-          # fall back to installing pnpm globally if needed.
-          corepack enable || true
-          corepack prepare pnpm@9 --activate || true
-          if ! command -v pnpm >/dev/null 2>&1; then
-            echo "pnpm not found via corepack — installing pnpm globally"
-            npm install -g pnpm@9
-          fi
-          echo "node: $(node --version)"
-          echo "npm: $(npm --version)"
-          echo "pnpm: $(pnpm --version)"
+      - name: Check frontend package.json exists
+        run: node -e "const fs=require('fs'); if(!fs.existsSync('frontend/package.json')){console.error('frontend/package.json not found'); process.exit(1);} else {console.log('frontend/package.json found')}"
 
       - name: Install dependencies
-        run: |
-          cd frontend
-          pnpm install --no-frozen-lockfile
+        working-directory: frontend
+        run: pnpm install --no-frozen-lockfile
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -89,15 +70,15 @@ jobs:
 
       - name: Install Windows build deps
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
           choco install openssl.light -y || true
 
       - name: Build desktop bundles (Tauri)
         env:
           NO_STRIP: ${{ matrix.os == 'ubuntu-latest' && 'true' || '' }}
-        run: |
-          cd frontend
-          pnpm tauri:build:cpu
+        working-directory: frontend
+        run: pnpm tauri:build:cpu
 
       - name: Upload bundles
         uses: actions/upload-artifact@v4
@@ -109,7 +90,7 @@ jobs:
     name: Assemble and publish release assets
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Download build artifacts

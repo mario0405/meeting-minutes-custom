@@ -20,14 +20,14 @@ import { useMeetingOperations } from '@/hooks/meeting-details/useMeetingOperatio
 export default function PageContent({
   meeting,
   summaryData,
-  shouldAutoGenerate = false,
-  onAutoGenerateComplete,
+  summaryProcessStatus = 'idle',
+  summaryProcessError = null,
   onMeetingUpdated
 }: {
   meeting: any;
   summaryData: Summary | null;
-  shouldAutoGenerate?: boolean;
-  onAutoGenerateComplete?: () => void;
+  summaryProcessStatus?: string;
+  summaryProcessError?: string | null;
   onMeetingUpdated?: () => Promise<void>;
 }) {
   console.log('📄 PAGE CONTENT: Initializing with data:', {
@@ -61,6 +61,32 @@ export default function PageContent({
     updateMeetingTitle: meetingData.updateMeetingTitle,
     setAiSummary: meetingData.setAiSummary,
   });
+
+  const resumeSummaryPolling = summaryGeneration.resumeSummaryPolling;
+
+  // If a summary process is already running for this meeting, resume polling instead of starting a new one
+  const resumedPollingForMeetingRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!meeting?.id) return;
+    if (resumedPollingForMeetingRef.current === meeting.id) return;
+    if (meetingData.aiSummary) return;
+
+    if (summaryProcessStatus === 'pending') {
+      resumedPollingForMeetingRef.current = meeting.id;
+      try {
+        resumeSummaryPolling?.();
+      } catch (error) {
+        console.error('Failed to resume summary polling:', error);
+        toast.error('Zusammenfassung konnte nicht geladen werden', { description: String(error) });
+      }
+      return;
+    }
+
+    if (summaryProcessStatus === 'failed' && summaryProcessError) {
+      toast.error('Zusammenfassung fehlgeschlagen', { description: summaryProcessError });
+      resumedPollingForMeetingRef.current = meeting.id;
+    }
+  }, [meeting?.id, meetingData.aiSummary, summaryProcessStatus, summaryProcessError, resumeSummaryPolling]);
 
   const copyOperations = useCopyOperations({
     meeting,
@@ -116,23 +142,6 @@ export default function PageContent({
 
     return () => clearTimeout(timeout);
   }, [customPrompt, meeting?.id]);
-
-  // Auto-generate summary when flag is set
-  useEffect(() => {
-    const autoGenerate = async () => {
-      if (shouldAutoGenerate && meetingData.transcripts.length > 0) {
-        console.log(`🤖 Auto-generating summary with ${modelConfig.modelConfig.provider}/${modelConfig.modelConfig.model}...`);
-        await summaryGeneration.handleGenerateSummary(customPrompt);
-
-        // Notify parent that auto-generation is complete
-        if (onAutoGenerateComplete) {
-          onAutoGenerateComplete();
-        }
-      }
-    };
-
-    autoGenerate();
-  }, [shouldAutoGenerate]); // Only trigger when flag changes
 
   return (
     <motion.div

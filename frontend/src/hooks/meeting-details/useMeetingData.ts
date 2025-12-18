@@ -13,11 +13,17 @@ interface UseMeetingDataProps {
 
 export function useMeetingData({ meeting, summaryData, onMeetingUpdated }: UseMeetingDataProps) {
   // State
-  const [transcripts] = useState<Transcript[]>(meeting.transcripts);
-  const [meetingTitle, setMeetingTitle] = useState(meeting.title || '+ Neues Meeting');
+  const [transcripts] = useState<Transcript[]>(() =>
+    Array.isArray(meeting?.transcripts) ? meeting.transcripts : []
+  );
+  const [meetingTitle, setMeetingTitle] = useState(meeting?.title || '+ Neues Meeting');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isTitleDirty, setIsTitleDirty] = useState(false);
-  const [aiSummary, setAiSummary] = useState<Summary | null>(summaryData);
+  const [aiSummary, setAiSummary] = useState<Summary | null>(() => {
+    if (!summaryData) return null;
+    if (typeof summaryData === 'object' && Object.keys(summaryData).length === 0) return null;
+    return summaryData;
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [, setIsSummaryDirty] = useState(false);
   const [, setError] = useState<string>('');

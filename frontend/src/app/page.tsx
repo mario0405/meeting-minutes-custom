@@ -1154,7 +1154,7 @@ export default function Home() {
     });
   };
 
-  const generateAISummary = useCallback(async (prompt: string = '') => {
+  const generateAISummary = useCallback(async (prompt: string = '', meetingId?: string) => {
     setSummaryStatus('processing');
     setSummaryError(null);
 
@@ -1175,6 +1175,7 @@ export default function Home() {
         text: fullTranscript,
         model: modelConfig.provider,
         modelName: modelConfig.model,
+        ...(meetingId ? { meetingId } : {}),
         chunkSize: 40000,
         overlap: 1000,
         customPrompt: prompt,
@@ -1493,38 +1494,38 @@ export default function Home() {
       // Close modal and create summary using notes if provided
       setShowPostRecordingNotesModal(false);
       if (postRecordingNotes && postRecordingNotes.trim().length > 0) {
-        await generateAISummary(postRecordingNotes.trim());
+        await generateAISummary(postRecordingNotes.trim(), pendingSavedMeetingId ?? undefined);
       } else {
-        await generateAISummary('');
+        await generateAISummary('', pendingSavedMeetingId ?? undefined);
       }
     } catch (err) {
       console.error('Failed to start AI summary generation with post-recording notes', err);
       toast.error('Zusammenfassung konnte nicht erstellt werden');
-    } finally {
-      setIsSavingNotes(false);
-+      setPostRecordingNotes('');
-      if (pendingSavedMeetingId) {
-        router.push(`/meeting-details?id=${pendingSavedMeetingId}`);
-        Analytics.trackPageView('meeting_details');
-        setPendingSavedMeetingId(null);
+	    } finally {
+	      setIsSavingNotes(false);
+	      setPostRecordingNotes('');
+	      if (pendingSavedMeetingId) {
+	        router.push(`/meeting-details?id=${pendingSavedMeetingId}`);
+	        Analytics.trackPageView('meeting_details');
+	        setPendingSavedMeetingId(null);
       }
     }
   };
 
   const handleSkipPostRecordingNotes = async () => {
-    // Create summary without notes and navigate
+      // Create summary without notes and navigate
     try {
       setShowPostRecordingNotesModal(false);
-      await generateAISummary('');
-    } catch (err) {
-      console.error('Failed to create summary without notes', err);
-      toast.error('Zusammenfassung konnte nicht erstellt werden');
-    } finally {
-+      setPostRecordingNotes('');
-      if (pendingSavedMeetingId) {
-        router.push(`/meeting-details?id=${pendingSavedMeetingId}`);
-        Analytics.trackPageView('meeting_details');
-        setPendingSavedMeetingId(null);
+      await generateAISummary('', pendingSavedMeetingId ?? undefined);
+	    } catch (err) {
+	      console.error('Failed to create summary without notes', err);
+	      toast.error('Zusammenfassung konnte nicht erstellt werden');
+	    } finally {
+	      setPostRecordingNotes('');
+	      if (pendingSavedMeetingId) {
+	        router.push(`/meeting-details?id=${pendingSavedMeetingId}`);
+	        Analytics.trackPageView('meeting_details');
+	        setPendingSavedMeetingId(null);
       }
     }
   };

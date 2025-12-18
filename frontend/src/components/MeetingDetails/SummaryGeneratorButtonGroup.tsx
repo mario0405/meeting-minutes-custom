@@ -51,6 +51,10 @@ export function SummaryGeneratorButtonGroup({
 }: SummaryGeneratorButtonGroupProps) {
   const [isCheckingModels, setIsCheckingModels] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const isGenerating =
+    summaryStatus === 'processing' ||
+    summaryStatus === 'summarizing' ||
+    summaryStatus === 'regenerating';
 
   if (!hasTranscripts) {
     return null;
@@ -103,18 +107,18 @@ export function SummaryGeneratorButtonGroup({
           Analytics.trackButtonClick('generate_summary', 'meeting_details');
           checkOllamaModelsAndGenerate();
         }}
-        disabled={summaryStatus === 'processing' || isCheckingModels || isModelConfigLoading}
+        disabled={isGenerating || isCheckingModels || isModelConfigLoading}
         title={
           isModelConfigLoading
             ? 'Modellkonfiguration wird geladen…'
-            : summaryStatus === 'processing'
+            : isGenerating
             ? 'Zusammenfassung wird erstellt…'
             : isCheckingModels
             ? 'Modelle werden geprüft…'
             : 'KI-Zusammenfassung erstellen'
         }
       >
-        {summaryStatus === 'processing' || isCheckingModels || isModelConfigLoading ? (
+        {isGenerating || isCheckingModels || isModelConfigLoading ? (
           <>
             <Loader2 className="animate-spin xl:mr-2" size={18} />
             <span className="hidden xl:inline">Verarbeiten…</span>

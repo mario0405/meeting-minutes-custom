@@ -315,23 +315,108 @@ export function useSummaryGeneration({
 
   // Public API: Regenerate summary from original transcript
   const handleRegenerateSummary = useCallback(async (customPrompt: string = '') => {
-    if (!originalTranscript.trim()) {
-      console.error('No original transcript available for regeneration');
+    const transcriptText = originalTranscript.trim() || transcripts.map(t => t.text).join('\n').trim();
+    if (!transcriptText) {
+      console.error('No transcript available for regeneration');
+      toast.error('Kein Transkript für die Neuerstellung verfügbar');
       return;
     }
 
     await processSummary({
-      transcriptText: originalTranscript,
+      transcriptText,
       customPrompt,
       isRegeneration: true
     });
-  }, [originalTranscript, processSummary]);
+  }, [originalTranscript, transcripts, processSummary]);
+
+  // Resume polling for an already-running summary process without starting a new one
+  const resumeSummaryPolling = useCallback(async () => {
+    setSummaryStatus('summarizing');
+    setSummaryError(null);
+
+    startSummaryPolling(meeting.id, meeting.id, async (pollingResult) => {
+      if (pollingResult.status === 'error' || pollingResult.status === 'failed') {
+        const errorMessage =
+          pollingResult.error ||
+          'Zusammenfassung konnte nicht erstellt werden';
+        setSummaryError(errorMessage);
+        setSummaryStatus('error');
+        toast.error('Zusammenfassung konnte nicht erstellt werden', { description: errorMessage });
+        return;
+      }
+
+      if (pollingResult.status === 'completed' && pollingResult.data) {
+        const meetingName = pollingResult.data.MeetingName || pollingResult.meetingName;
+        if (meetingName) {
+          updateMeetingTitle(meetingName);
+        }
+
+        if (pollingResult.data.markdown) {
+          setAiSummary({ markdown: pollingResult.data.markdown } as any);
+          setSummaryStatus('completed');
+          if (meetingName && onMeetingUpdated) {
+            await onMeetingUpdated();
+          }
+          return;
+        }
+
+        // Legacy format handling
+        const summarySections = Object.entries(pollingResult.data).filter(([key]) => key !== 'MeetingName');
+        const allEmpty = summarySections.every(([, section]) => !(section as any).blocks || (section as any).blocks.length === 0);
+
+        if (allEmpty) {
+          setSummaryError('Die Zusammenfassung wurde erstellt, enthält aber keinen Inhalt.');
+          setSummaryStatus('error');
+          return;
+        }
+
+        const { MeetingName, ...summaryData } = pollingResult.data;
+        const formattedSummary: Summary = {};
+        const sectionKeys = pollingResult.data._section_order || Object.keys(summaryData);
+
+        for (const key of sectionKeys) {
+          try {
+            const section = summaryData[key];
+            if (section && typeof section === 'object' && 'title' in section && 'blocks' in section) {
+              const typedSection = section as { title?: string; blocks?: any[] };
+
+              if (Array.isArray(typedSection.blocks)) {
+                formattedSummary[key] = {
+                  title: typedSection.title || key,
+                  blocks: typedSection.blocks.map((block: any) => ({
+                    ...block,
+                    color: 'default',
+                    content: block?.content?.trim() || ''
+                  }))
+                };
+              } else {
+                formattedSummary[key] = {
+                  title: typedSection.title || key,
+                  blocks: []
+                };
+              }
+            }
+          } catch (error) {
+            console.warn(`Error processing section ${key}:`, error);
+          }
+        }
+
+        setAiSummary(formattedSummary);
+        setSummaryStatus('completed');
+
+        if (meetingName && onMeetingUpdated) {
+          await onMeetingUpdated();
+        }
+      }
+    });
+  }, [meeting.id, startSummaryPolling, updateMeetingTitle, setAiSummary, onMeetingUpdated]);
 
   return {
     summaryStatus,
     summaryError,
     handleGenerateSummary,
     handleRegenerateSummary,
+    resumeSummaryPolling,
     getSummaryStatusMessage,
   };
 }

@@ -24,64 +24,10 @@ function MeetingDetailsContent() {
   const router = useRouter();
   const [meetingDetails, setMeetingDetails] = useState<MeetingDetailsResponse | null>(null);
   const [meetingSummary, setMeetingSummary] = useState<Summary | null>(null);
+  const [summaryProcessStatus, setSummaryProcessStatus] = useState<string>('idle');
+  const [summaryProcessError, setSummaryProcessError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [shouldAutoGenerate, setShouldAutoGenerate] = useState<boolean>(false);
-  const [hasCheckedAutoGen, setHasCheckedAutoGen] = useState<boolean>(false);
-
-  // Check if gemma3:1b model is available in Ollama
-  const checkForGemmaModel = useCallback(async (): Promise<boolean> => {
-    try {
-      const models = await invoke('get_ollama_models', { endpoint: null }) as any[];
-      const hasGemma = models.some((m: any) => m.name === 'gemma3:1b');
-      console.log('🔍 Checked for gemma3:1b:', hasGemma);
-      return hasGemma;
-    } catch (error) {
-      console.error('❌ Failed to check Ollama models:', error);
-      return false;
-    }
-  }, []);
-
-  // Set up auto-generation - respects DB as source of truth
-  const setupAutoGeneration = useCallback(async () => {
-    if (hasCheckedAutoGen) return; // Only check once
-
-    try {
-      // ✅ STEP 1: Check what's currently in database
-      const currentConfig = await invoke('api_get_model_config') as any;
-
-      // ✅ STEP 2: If DB already has a model, use it (never override!)
-      if (currentConfig && currentConfig.model) {
-        console.log('✅ Using existing model from DB:', currentConfig.model);
-        setShouldAutoGenerate(true);
-        setHasCheckedAutoGen(true);
-        return;
-      }
-
-      // ✅ STEP 3: DB is empty - check if gemma3:1b exists as fallback
-      const hasGemma = await checkForGemmaModel();
-
-      if (hasGemma) {
-        console.log('💾 DB empty, using gemma3:1b as initial default');
-
-        await invoke('api_save_model_config', {
-          provider: 'ollama',
-          model: 'gemma3:1b',
-          whisperModel: 'large-v3',
-          apiKey: null,
-          ollamaEndpoint: null,
-        });
-
-        setShouldAutoGenerate(true);
-      } else {
-        console.log('⚠️ No model configured and gemma3:1b not found');
-      }
-    } catch (error) {
-      console.error('❌ Failed to setup auto-generation:', error);
-    }
-
-    setHasCheckedAutoGen(true);
-  }, [hasCheckedAutoGen, checkForGemmaModel]);
 
   // Extract fetchMeetingDetails so it can be called from child components
   const fetchMeetingDetails = useCallback(async () => {
@@ -108,6 +54,8 @@ function MeetingDetailsContent() {
   useEffect(() => {
     setMeetingDetails(null);
     setMeetingSummary(null);
+    setSummaryProcessStatus('idle');
+    setSummaryProcessError(null);
     setError(null);
     setIsLoading(true);
   }, [meetingId]);
@@ -138,30 +86,85 @@ function MeetingDetailsContent() {
 
         console.log('🔍 FETCH SUMMARY: Raw response:', summary);
 
-        // Check if the summary request failed with 404 or error status, or if no summary exists yet (idle)
-        if (summary.status === 'error' || summary.error || summary.status === 'idle') {
-          console.warn('Meeting summary not found, error occurred, or no summary generated yet:', summary.error || 'idle');
+        const status = (summary.status || 'idle').toLowerCase();
+        setSummaryProcessStatus(status);
+        setSummaryProcessError(summary.error || null);
+
+        // Only parse summary content when it's completed and contains data
+        if (status !== 'completed' || !summary.data) {
+          if (status === 'idle') {
+            console.warn('No summary generated yet (idle)');
+          } else {
+            console.log(`Summary process status is '${status}', waiting for completion...`);
+          }
           setMeetingSummary(null);
           return;
         }
 
-        const summaryData = summary.data || {};
+	        const summaryData = summary.data;
+	
+	        // Parse if it's a JSON string (backend may return double-encoded JSON)
+	        let parsedData = summaryData;
+	        if (typeof summaryData === 'string') {
+	          try {
+	            parsedData = JSON.parse(summaryData);
+	          } catch (e) {
+	            console.warn('Failed to parse summary JSON string:', e);
+	            setMeetingSummary(null);
+	            return;
+	          }
+	        }
+	
+	        if (!parsedData || typeof parsedData !== 'object') {
+	          console.warn('Invalid summary data format:', parsedData);
+	          setMeetingSummary(null);
+	          return;
+	        }
 
-        // Parse if it's a JSON string (backend may return double-encoded JSON)
-        let parsedData = summaryData;
-        if (typeof summaryData === 'string') {
-          try {
-            parsedData = JSON.parse(summaryData);
-          } catch (e) {
-            parsedData = {};
-          }
-        }
+	        console.log('🔍 FETCH SUMMARY: Parsed data:', parsedData);
+	
+	        // Legacy saved format from manual edits: { MeetingName, MeetingNotes: { sections: [...] } }
+	        const meetingNotesSections = (parsedData as any)?.MeetingNotes?.sections;
+	        if (Array.isArray(meetingNotesSections)) {
+	          const formattedSummary: Summary = {};
+	          const order: string[] = [];
+	
+	          for (let index = 0; index < meetingNotesSections.length; index++) {
+	            const section = meetingNotesSections[index];
+	            if (!section || typeof section !== 'object') continue;
+	            const sectionTitle = typeof section.title === 'string' ? section.title : `Abschnitt ${index + 1}`;
+	
+	            let sectionKeyBase = sectionTitle.trim() || `section_${index + 1}`;
+	            // Ensure stable unique keys
+	            sectionKeyBase = sectionKeyBase.replace(/\s+/g, '_');
+	            let sectionKey = sectionKeyBase;
+	            let suffix = 2;
+	            while (formattedSummary[sectionKey]) {
+	              sectionKey = `${sectionKeyBase}_${suffix}`;
+	              suffix++;
+	            }
+	
+	            order.push(sectionKey);
+	            formattedSummary[sectionKey] = {
+	              title: sectionTitle,
+	              blocks: Array.isArray(section.blocks)
+	                ? section.blocks.map((block: any) => ({
+	                    ...block,
+	                    color: 'default',
+	                    content: block?.content?.trim?.() || ''
+	                  }))
+	                : []
+	            };
+	          }
+	
+	          (formattedSummary as any)._section_order = order;
+	          setMeetingSummary(formattedSummary);
+	          return;
+	        }
 
-        console.log('🔍 FETCH SUMMARY: Parsed data:', parsedData);
-
-        // Priority 1: BlockNote JSON format
-        if (parsedData.summary_json) {
-          setMeetingSummary(parsedData as any);
+	        // Priority 1: BlockNote JSON format
+	        if (parsedData.summary_json) {
+	          setMeetingSummary(parsedData as any);
           return;
         }
 
@@ -246,29 +249,6 @@ function MeetingDetailsContent() {
     loadData();
   }, [meetingId, fetchMeetingDetails]);
 
-  // Auto-generation check: runs when meeting is loaded with no summary
-  useEffect(() => {
-    const checkAutoGen = async () => {
-      // Only auto-generate if:
-      // 1. We have meeting details
-      // 2. No summary exists
-      // 3. Meeting has transcripts
-      // 4. Haven't checked yet
-      if (
-        meetingDetails &&
-        meetingSummary === null &&
-        meetingDetails.transcripts &&
-        meetingDetails.transcripts.length > 0 &&
-        !hasCheckedAutoGen
-      ) {
-        console.log('🚀 No summary found, checking for auto-generation...');
-        await setupAutoGeneration();
-      }
-    };
-
-    checkAutoGen();
-  }, [meetingDetails, meetingSummary, hasCheckedAutoGen, setupAutoGeneration]);
-
   if (error) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -294,8 +274,8 @@ function MeetingDetailsContent() {
   return <PageContent
     meeting={meetingDetails}
     summaryData={meetingSummary}
-    shouldAutoGenerate={shouldAutoGenerate}
-    onAutoGenerateComplete={() => setShouldAutoGenerate(false)}
+    summaryProcessStatus={summaryProcessStatus}
+    summaryProcessError={summaryProcessError}
     onMeetingUpdated={async () => {
       // Refetch meeting details to get updated title from backend
       await fetchMeetingDetails();
