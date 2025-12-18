@@ -266,6 +266,12 @@ if (-not (Test-Path "whisper-server-package")) {
 if (-not (Test-Path "whisper-server-package\whisper-server.exe")) {
     Write-Host "whisper-server.exe not found. Fetching latest release..."
     
+    $repo = "Zackriya-Solutions/meeting-minutes"
+    if ($env:GITHUB_REPO) {
+        $repo = $env:GITHUB_REPO
+        Write-Host "Using custom repository: $repo"
+    }
+
     try {
         # Fetch the latest release information from GitHub API
         Write-Host "Getting latest release information from GitHub..."
@@ -274,6 +280,7 @@ if (-not (Test-Path "whisper-server-package\whisper-server.exe")) {
         $headers["User-Agent"] = "PowerShell-Script"
         
         $apiUrl = "https://api.github.com/repos/Zackriya-Solutions/meeting-minutes/releases/latest"
+        $apiUrl = "https://api.github.com/repos/$repo/releases/latest"
         $releaseInfo = Invoke-RestMethod -Uri $apiUrl -Headers $headers -UseBasicParsing
         
         $tagName = $releaseInfo.tag_name
@@ -281,6 +288,7 @@ if (-not (Test-Path "whisper-server-package\whisper-server.exe")) {
         
         # Construct the download URL with the actual tag
         $downloadUrl = "https://github.com/Zackriya-Solutions/meeting-minutes/releases/download/$tagName/whisper-server.exe"
+        $downloadUrl = "https://github.com/$repo/releases/download/$tagName/whisper-server.exe"
         $destinationPath = "whisper-server-package\whisper-server.exe"
         
         # Download the file
@@ -300,6 +308,7 @@ if (-not (Test-Path "whisper-server-package\whisper-server.exe")) {
         Write-Host "Attempting alternative download method..."
         try {
             $allReleasesUrl = "https://api.github.com/repos/Zackriya-Solutions/meeting-minutes/releases"
+            $allReleasesUrl = "https://api.github.com/repos/$repo/releases"
             $headers = @{"User-Agent" = "PowerShell-Script"}
             $releases = Invoke-RestMethod -Uri $allReleasesUrl -Headers $headers -UseBasicParsing
             
@@ -307,6 +316,7 @@ if (-not (Test-Path "whisper-server-package\whisper-server.exe")) {
                 $latestTag = $releases[0].tag_name
                 Write-Host "Found release: $latestTag"
                 $altDownloadUrl = "https://github.com/Zackriya-Solutions/meeting-minutes/releases/download/$latestTag/whisper-server.exe"
+                $altDownloadUrl = "https://github.com/$repo/releases/download/$latestTag/whisper-server.exe"
                 
                 Write-Host "Downloading from: $altDownloadUrl"
                 Invoke-WebRequest -Uri $altDownloadUrl -OutFile "whisper-server-package\whisper-server.exe" -UseBasicParsing
@@ -319,6 +329,7 @@ if (-not (Test-Path "whisper-server-package\whisper-server.exe")) {
             Write-Host "Alternative method also failed."
             Write-Host "Please download whisper-server.exe manually from:"
             Write-Host "https://github.com/Zackriya-Solutions/meeting-minutes/releases"
+            Write-Host "https://github.com/$repo/releases"
             Write-Host "And place it in: whisper-server-package\whisper-server.exe"
             exit 1
         }
@@ -772,11 +783,17 @@ if ($frontendInstalled) {
     
     if ($installFrontend -eq 'Y' -or $installFrontend -eq 'y') {
         Write-Host "Fetching latest release information..."
+
+        $repo = "Zackriya-Solutions/meeting-minutes"
+        if ($env:GITHUB_REPO) {
+            $repo = $env:GITHUB_REPO
+        }
         
         try {
             # Fetch the latest release information
             $headers = @{"User-Agent" = "PowerShell-Script"}
             $apiUrl = "https://api.github.com/repos/Zackriya-Solutions/meeting-minutes/releases/latest"
+            $apiUrl = "https://api.github.com/repos/$repo/releases/latest"
             $releaseInfo = Invoke-RestMethod -Uri $apiUrl -Headers $headers -UseBasicParsing
             
             # Find the setup.exe asset - looking for files ending with _x64-setup.exe or similar
@@ -852,6 +869,7 @@ if ($frontendInstalled) {
                 Write-Host ""
                 Write-Host "Please download the installer manually from:"
                 Write-Host "https://github.com/Zackriya-Solutions/meeting-minutes/releases"
+                Write-Host "https://github.com/$repo/releases"
             }
             
         } catch {
@@ -861,6 +879,7 @@ if ($frontendInstalled) {
             try {
                 Write-Host "Attempting alternative download method..."
                 $allReleasesUrl = "https://api.github.com/repos/Zackriya-Solutions/meeting-minutes/releases"
+                $allReleasesUrl = "https://api.github.com/repos/$repo/releases"
                 $releases = Invoke-RestMethod -Uri $allReleasesUrl -Headers @{"User-Agent" = "PowerShell-Script"} -UseBasicParsing
                 
                 if ($releases.Count -gt 0) {
@@ -907,12 +926,14 @@ if ($frontendInstalled) {
                         Write-Host "No installer found in any recent releases."
                         Write-Host "Please download the frontend installer manually from:"
                         Write-Host "https://github.com/Zackriya-Solutions/meeting-minutes/releases"
+                        Write-Host "https://github.com/$repo/releases"
                     }
                 }
             } catch {
                 Write-Host "Alternative method also failed."
                 Write-Host "Please download the frontend installer manually from:"
                 Write-Host "https://github.com/Zackriya-Solutions/meeting-minutes/releases"
+                Write-Host "https://github.com/$repo/releases"
             }
         }
     }

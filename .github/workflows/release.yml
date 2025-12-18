@@ -83,6 +83,10 @@ jobs:
         run: |
           choco install openssl.light -y || true
 
+      - name: Build Next.js frontend
+        working-directory: frontend
+        run: pnpm build
+
       - name: Build desktop bundles (Tauri)
         env:
           NO_STRIP: ${{ matrix.os == 'ubuntu-latest' && 'true' || '' }}
