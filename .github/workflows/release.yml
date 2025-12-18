@@ -20,7 +20,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -35,8 +35,17 @@ jobs:
         with:
           version: '9'
 
-      - name: Check frontend package.json exists
-        run: node -e "const fs=require('fs'); if(!fs.existsSync('frontend/package.json')){console.error('frontend/package.json not found'); process.exit(1);} else {console.log('frontend/package.json found')}"
+      - name: Debug - Verify package.json exists
+        shell: bash
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Files in current directory:"
+          ls -la
+          echo "Frontend directory contents:"
+          ls -la frontend/
+          echo "Package.json contents (first 20 lines):"
+          if [ -f frontend/package.json ]; then head -n 20 frontend/package.json; else echo "frontend/package.json missing"; fi
 
       - name: Install dependencies
         working-directory: frontend
