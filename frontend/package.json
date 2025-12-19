@@ -2,6 +2,7 @@
     "name": "meetily",
     "version": "0.1.1",
     "private": true,
+    "packageManager": "pnpm@9.15.9",
     "main": "electron/main.js",
     "scripts": {
         "dev": "pnpm build && pnpm start -p 3118",
