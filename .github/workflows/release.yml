@@ -138,11 +138,34 @@ jobs:
           Write-Host "Listing bundle files:"; Get-ChildItem -Recurse -Force src-tauri\target\release\bundle || $true
           Compress-Archive -Path $SOURCE -DestinationPath dist/windows.zip -Force
 
+      - name: Debug output folders (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          echo "PWD=$(pwd)"
+          ls -la
+          echo "dist:"
+          ls -la dist || true
+          echo "search for dist folders:"
+          find . -maxdepth 6 -type d -name dist -print || true
+          echo "list some files:"
+          find . -maxdepth 4 -type f | head -n 200
+
+      - name: Debug output folders (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "PWD=$(pwd)"
+          Get-ChildItem -Force -File -Recurse -Depth 1 | Select-Object -First 200
+          Write-Host "dist:"
+          if (Test-Path dist) { Get-ChildItem -Force dist -Recurse | Select-Object -First 200 } else { Write-Host "dist not found" }
+          Write-Host "search for dist folders:"; Get-ChildItem -Directory -Recurse -Force -Filter dist -ErrorAction SilentlyContinue | Select-Object -First 50
+
       - name: Upload packaged bundle
         uses: actions/upload-artifact@v4
         with:
           name: assets
-          path: dist/*
+          path: dist/**
           if-no-files-found: error
 
   publish:
