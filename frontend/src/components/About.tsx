@@ -27,7 +27,7 @@ export function About() {
                     />
                 </div>
                 {/* <h1 className="text-xl font-bold text-gray-900">Protocolito</h1> */}
-                <span className="text-sm text-gray-500">v0.1.1 – Vorabversion</span>
+                <span className="text-sm text-gray-500">v0.1.9 – Vorabversion</span>
                 <p className="text-medium text-gray-600 mt-1">
                     Echtzeit-Notizen und Zusammenfassungen – alles bleibt auf deinem Gerät.
                 </p>

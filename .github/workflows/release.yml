@@ -138,23 +138,27 @@ jobs:
           Write-Host "Listing bundle files:"; Get-ChildItem -Recurse -Force src-tauri\target\release\bundle || $true
           Compress-Archive -Path $SOURCE -DestinationPath dist/windows.zip -Force
 
-      - name: Debug output folders
+      - name: Debug for Tauri bundles (search common bundle paths)
         shell: bash
         run: |
           echo "PWD=$(pwd)"
-          ls -la || true
-          echo "dist:"
-          ls -la dist || true
-          echo "search for dist folders:"
-          find . -maxdepth 6 -type d -name dist -print || true
-          echo "first 200 files (no broken pipe):"
-          find . -maxdepth 4 -type f -print | sed -n '1,200p' || true
+          echo "Listing tree (shallow):"; ls -la || true
+          echo "Searching for 'bundle' dirs under src-tauri/ and target/":
+          find src-tauri -type d -name bundle -maxdepth 8 -print || true
+          find target -type d -name bundle -maxdepth 8 -print || true
+          find src-tauri -type f -name '*.app' -maxdepth 8 -print || true
+          echo "Show up to 200 files (no broken pipes):"
+          find . -maxdepth 6 -type f -print | sed -n '1,200p' || true
 
-      - name: Upload packaged bundle
+      - name: Upload packaged bundle (per-OS)
         uses: actions/upload-artifact@v4
         with:
-          name: assets
-          path: src-tauri/target/release/bundle/**
+          name: assets-${{ matrix.os }}
+          path: |
+            src-tauri/target/release/bundle/**
+            src-tauri/target/*/release/bundle/**
+            target/release/bundle/**
+            target/*/release/bundle/**
           if-no-files-found: error
 
   publish:

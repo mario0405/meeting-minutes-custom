@@ -780,7 +780,7 @@ const Sidebar: React.FC = () => {
                 <span>Einstellungen</span>
               </button>
               <div className="w-full flex items-center justify-center px-3 py-1 text-xs text-gray-400">
-              v0.1.1 - Vorabversion
+              v0.1.9 - Vorabversion
             </div>
           </div>
         )}
