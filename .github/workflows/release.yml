@@ -50,17 +50,19 @@ jobs:
           pwd
           ls -la
 
-      - name: Debug - Verify package.json exists
-        shell: bash
+      - name: Debug paths
         run: |
           echo "Current directory:"
           pwd
-          echo "Files in current directory:"
-          ls -la
-          echo "Frontend directory contents:"
-          ls -la frontend/
-          echo "Package.json contents (first 20 lines):"
-          if [ -f frontend/package.json ]; then head -n 20 frontend/package.json; else echo "frontend/package.json missing"; fi
+
+          echo "Files in current directory (frontend):"
+          ls -la . || true
+
+          echo "Repo root contents:"
+          ls -la .. || true
+
+          echo "Package.json (first 20 lines):"
+          head -n 20 package.json || true
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
