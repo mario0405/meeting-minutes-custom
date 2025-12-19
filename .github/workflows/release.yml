@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   build:
     defaults:
@@ -107,14 +111,38 @@ jobs:
       - name: Build desktop bundles (Tauri)
         env:
           NO_STRIP: ${{ matrix.os == 'ubuntu-latest' && 'true' || '' }}
-        working-directory: frontend
         run: pnpm tauri:build:cpu
 
-      - name: Upload bundles
+      - name: Package bundles (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p dist
+          SOURCE_DIR="src-tauri/target/release/bundle"
+          echo "Listing bundle files:" && ls -R "$SOURCE_DIR" || true
+          tar -czf dist/linux.tar.gz -C "$SOURCE_DIR" .
+
+      - name: Package bundles (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir -p dist
+          SOURCE_DIR="src-tauri/target/release/bundle"
+          echo "Listing bundle files:" && ls -R "$SOURCE_DIR" || true
+          ditto -c -k --sequesterRsrc --keepParent "$SOURCE_DIR" "dist/macos.zip"
+
+      - name: Package bundles (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $SOURCE = "src-tauri\target\release\bundle\*"
+          Write-Host "Listing bundle files:"; Get-ChildItem -Recurse -Force src-tauri\target\release\bundle || $true
+          Compress-Archive -Path $SOURCE -DestinationPath dist/windows.zip -Force
+
+      - name: Upload packaged bundle
         uses: actions/upload-artifact@v4
         with:
-          name: tauri-bundles-${{ matrix.os }}
-          path: frontend/src-tauri/target/release/bundle/**
+          name: bundle-${{ matrix.os }}
+          path: dist/*
 
   publish:
     defaults:
@@ -137,17 +165,19 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          path: dist
+          path: release-assets
 
       - name: List collected artifacts
-        run: ls -R dist || true
+        run: ls -R release-assets || true
 
       - name: Create or update GitHub Release and upload assets
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/**
+            release-assets/**/windows.zip
+            release-assets/**/macos.zip
+            release-assets/**/linux.tar.gz
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
