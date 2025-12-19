@@ -120,86 +120,81 @@ jobs:
           echo "Listing src-tauri (if present):"; ls -la src-tauri || true
           echo "Listing repo root (parent):"; ls -la .. || true
           echo "Searching for 'bundle' directories anywhere (maxdepth 8):"
-          find . -type d -name bundle -maxdepth 8 -print || true
+          find . -maxdepth 8 -type d -name bundle -print || true
           echo "Searching for common installer files (.dmg .msi .exe .deb .AppImage .rpm .zip):"
           find . -type f \( -iname '*.dmg' -o -iname '*.msi' -o -iname '*.exe' -o -iname '*.deb' -o -iname '*.AppImage' -o -iname '*.rpm' -o -iname '*.zip' \) -print || true
 
-
-      - name: Package bundles (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          mkdir -p dist
-          SOURCE_DIR="src-tauri/target/release/bundle"
-          echo "Listing bundle files:" && ls -R "$SOURCE_DIR" || true
-          tar -czf dist/linux.tar.gz -C "$SOURCE_DIR" .
-
-      - name: Package bundles (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          mkdir -p dist
-          SOURCE_DIR="src-tauri/target/release/bundle"
-          echo "Listing bundle files:" && ls -R "$SOURCE_DIR" || true
-          ditto -c -k --sequesterRsrc --keepParent "$SOURCE_DIR" "dist/macos.zip"
-
-      - name: Package bundles (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path dist | Out-Null
-          $SOURCE = "src-tauri\target\release\bundle\*"
-          Write-Host "Listing bundle files:"; Get-ChildItem -Recurse -Force src-tauri\target\release\bundle || $true
-          Compress-Archive -Path $SOURCE -DestinationPath dist/windows.zip -Force
-
-      - name: Debug for Tauri bundles (search common bundle paths)
-        shell: bash
-        run: |
-          echo "PWD=$(pwd)"
-          echo "Listing tree (shallow):"; ls -la || true
-          echo "Searching for 'bundle' dirs under src-tauri/ and target/":
-          find src-tauri -type d -name bundle -maxdepth 8 -print || true
-          find target -type d -name bundle -maxdepth 8 -print || true
-          find src-tauri -type f -name '*.app' -maxdepth 8 -print || true
-          echo "Show up to 200 files (no broken pipes):"
-          find . -maxdepth 6 -type f -print | sed -n '1,200p' || true
-
-      - name: Collect bundle/installers (Unix)
+      - name: Collect release assets (Linux/macOS)
         if: runner.os != 'Windows'
         shell: bash
         run: |
-          mkdir -p release-assets
-          echo "Searching common bundle/installer paths and copying into release-assets/..."
-          tmpfile=$(mktemp)
-          for d in src-tauri target; do
-            if [ -d "$d" ]; then
-              find "$d" -type f \( -iname '*.dmg' -o -iname '*.msi' -o -iname '*.exe' -o -iname '*.deb' -o -iname '*.AppImage' -o -iname '*.rpm' -o -iname '*.zip' \) -print0 >> "$tmpfile"
-            fi
-          done
-          if [ -s "$tmpfile" ]; then
-            xargs -0 -a "$tmpfile" -I{} bash -c 'dst="release-assets/$(dirname "{}" | sed "s#\./##; s#/#-#g")"; mkdir -p "$dst"; cp -v "{}" "$dst" || true'
-            echo "Collected files:" ; ls -R release-assets || true
-          else
-            echo "No installer files found in src-tauri/ or target/"
-          fi
-          rm -f "$tmpfile"
+          set -euo pipefail
+          OUT_DIR="../release-assets/${{ matrix.os }}"
+          BUNDLE_DIR="src-tauri/target/release/bundle"
 
-      - name: Collect bundle/installers (Windows)
+          mkdir -p "$OUT_DIR"
+
+          if [ ! -d "$BUNDLE_DIR" ]; then
+            echo "::error::Expected bundle dir not found: $BUNDLE_DIR"
+            echo "Debug: showing src-tauri tree (depth 4):"
+            find src-tauri -maxdepth 4 -type d -print || true
+            exit 1
+          fi
+
+          ARCHIVE_BASENAME="bundle-${{ github.ref_name }}-${{ matrix.os }}"
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            echo "Creating archive: $OUT_DIR/${ARCHIVE_BASENAME}.tar.gz"
+            tar -czf "$OUT_DIR/${ARCHIVE_BASENAME}.tar.gz" -C "$BUNDLE_DIR" .
+          else
+            echo "Creating archive: $OUT_DIR/${ARCHIVE_BASENAME}.zip"
+            ditto -c -k --sequesterRsrc --keepParent "$BUNDLE_DIR" "$OUT_DIR/${ARCHIVE_BASENAME}.zip"
+          fi
+
+          echo "Copying installer files into $OUT_DIR..."
+          find "$BUNDLE_DIR" -maxdepth 8 -type f \
+            \( -iname '*.dmg' -o -iname '*.AppImage' -o -iname '*.deb' -o -iname '*.rpm' -o -iname '*.msi' -o -iname '*.exe' \) \
+            -print -exec cp -v {} "$OUT_DIR/" \; || true
+
+          echo "Collected files:"
+          ls -la "$OUT_DIR" || true
+
+      - name: Collect release assets (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path release-assets | Out-Null
-          $patterns = '*.exe','*.zip','*.msi','*.AppImage','*.dmg','*.deb','*.rpm'
+          $OutDir = Join-Path $env:GITHUB_WORKSPACE ("release-assets\\${{ matrix.os }}")
+          $BundleDir = Join-Path $env:GITHUB_WORKSPACE "frontend\\src-tauri\\target\\release\\bundle"
+
+          New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+
+          if (-Not (Test-Path $BundleDir)) {
+            Write-Error "Expected bundle dir not found: $BundleDir"
+            Get-ChildItem -Path (Join-Path $env:GITHUB_WORKSPACE "frontend\\src-tauri") -Directory -Recurse -Depth 4 -ErrorAction SilentlyContinue | Select-Object -First 200
+            exit 1
+          }
+
+          $ArchiveName = "bundle-${{ github.ref_name }}-${{ matrix.os }}.zip"
+          $ArchivePath = Join-Path $OutDir $ArchiveName
+          if (Test-Path $ArchivePath) { Remove-Item $ArchivePath -Force }
+          Write-Host "Creating archive: $ArchivePath"
+          Compress-Archive -Path (Join-Path $BundleDir '*') -DestinationPath $ArchivePath -Force
+
+          $patterns = '*.exe','*.msi'
           foreach ($p in $patterns) {
-            Get-ChildItem -Path src-tauri,target -Recurse -Filter $p -ErrorAction SilentlyContinue | ForEach-Object {
-              Copy-Item -Path $_.FullName -Destination (Join-Path $PWD 'release-assets') -Force
+            Write-Host "Copying installers matching $p"
+            Get-ChildItem -Path $BundleDir -Recurse -File -Filter $p -ErrorAction SilentlyContinue | ForEach-Object {
+              Copy-Item -Path $_.FullName -Destination $OutDir -Force
             }
           }
-          Write-Host "Collected files:"; Get-ChildItem -Path release-assets -Recurse | Select-Object -First 200
 
-      - name: Upload packaged bundle
+          Write-Host "Collected files:"
+          Get-ChildItem -Path $OutDir -Recurse | Select-Object -First 200
+
+      - name: Upload release assets
         uses: actions/upload-artifact@v4
         with:
           name: assets-${{ matrix.os }}
-          path: release-assets/**
+          path: release-assets
           if-no-files-found: error
 
   publish:
@@ -223,8 +218,9 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: assets
+          pattern: assets-*
           path: release-assets
+          merge-multiple: true
 
       - name: List collected artifacts
         run: ls -R release-assets || true
@@ -237,6 +233,17 @@ jobs:
           echo "Finding files under release-assets:"
           find release-assets -type f -maxdepth 6 -print || true
 
+      - name: Ensure release assets exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          file_count="$(find release-assets -type f | wc -l | tr -d ' ')"
+          echo "Release asset file count: $file_count"
+          if [ "$file_count" -eq 0 ]; then
+            echo "::error::No release assets found after downloading build artifacts."
+            exit 1
+          fi
+
       - name: Create or update GitHub Release and upload assets
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
@@ -244,6 +251,12 @@ jobs:
           files: |
             release-assets/**/*.zip
             release-assets/**/*.tar.gz
+            release-assets/**/*.dmg
+            release-assets/**/*.msi
+            release-assets/**/*.exe
+            release-assets/**/*.deb
+            release-assets/**/*.AppImage
+            release-assets/**/*.rpm
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
