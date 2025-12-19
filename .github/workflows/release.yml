@@ -113,6 +113,18 @@ jobs:
           NO_STRIP: ${{ matrix.os == 'ubuntu-latest' && 'true' || '' }}
         run: pnpm tauri:build:cpu
 
+      - name: Debug Tauri output locations
+        shell: bash
+        run: |
+          echo "PWD=$(pwd)"
+          echo "Listing src-tauri (if present):"; ls -la src-tauri || true
+          echo "Listing repo root (parent):"; ls -la .. || true
+          echo "Searching for 'bundle' directories anywhere (maxdepth 8):"
+          find . -type d -name bundle -maxdepth 8 -print || true
+          echo "Searching for common installer files (.dmg .msi .exe .deb .AppImage .rpm .zip):"
+          find . -type f \( -iname '*.dmg' -o -iname '*.msi' -o -iname '*.exe' -o -iname '*.deb' -o -iname '*.AppImage' -o -iname '*.rpm' -o -iname '*.zip' \) -print || true
+
+
       - name: Package bundles (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
