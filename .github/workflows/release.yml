@@ -34,13 +34,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: frontend/pnpm-lock.yaml
 
-      - name: Enable Corepack and pin pnpm
+      - name: Setup pnpm (install and cache)
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+          cache: true
+          cache_dependency_path: frontend/pnpm-lock.yaml
+          run_install: false
+
+      - name: Sanity check pnpm/node
         run: |
-          corepack enable
-          corepack prepare "$(node -p \"require('./package.json').packageManager\")" --activate
+          node -v
+          pnpm -v
+          pwd
+          ls -la
 
       - name: Debug - Verify package.json exists
         shell: bash
@@ -55,8 +63,7 @@ jobs:
           if [ -f frontend/package.json ]; then head -n 20 frontend/package.json; else echo "frontend/package.json missing"; fi
 
       - name: Install dependencies
-        working-directory: frontend
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
