@@ -168,9 +168,19 @@ jobs:
         run: |
           mkdir -p release-assets
           echo "Searching common bundle/installer paths and copying into release-assets/..."
-          find src-tauri target -type f \( -iname '*.dmg' -o -iname '*.msi' -o -iname '*.exe' -o -iname '*.deb' -o -iname '*.AppImage' -o -iname '*.rpm' -o -iname '*.zip' \) -print0 \
-            | xargs -0 -I{} bash -c 'mkdir -p release-assets/$(dirname "{}" | sed "s#\./##; s#/#-#g") ; cp -v "{}" release-assets/ || true'
-          echo "Collected files:" ; ls -R release-assets || true
+          tmpfile=$(mktemp)
+          for d in src-tauri target; do
+            if [ -d "$d" ]; then
+              find "$d" -type f \( -iname '*.dmg' -o -iname '*.msi' -o -iname '*.exe' -o -iname '*.deb' -o -iname '*.AppImage' -o -iname '*.rpm' -o -iname '*.zip' \) -print0 >> "$tmpfile"
+            fi
+          done
+          if [ -s "$tmpfile" ]; then
+            xargs -0 -a "$tmpfile" -I{} bash -c 'dst="release-assets/$(dirname "{}" | sed "s#\./##; s#/#-#g")"; mkdir -p "$dst"; cp -v "{}" "$dst" || true'
+            echo "Collected files:" ; ls -R release-assets || true
+          else
+            echo "No installer files found in src-tauri/ or target/"
+          fi
+          rm -f "$tmpfile"
 
       - name: Collect bundle/installers (Windows)
         if: runner.os == 'Windows'
