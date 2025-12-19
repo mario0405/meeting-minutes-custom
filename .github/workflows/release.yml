@@ -162,15 +162,34 @@ jobs:
           echo "Show up to 200 files (no broken pipes):"
           find . -maxdepth 6 -type f -print | sed -n '1,200p' || true
 
-      - name: Upload packaged bundle (per-OS)
+      - name: Collect bundle/installers (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          echo "Searching common bundle/installer paths and copying into release-assets/..."
+          find src-tauri target -type f \( -iname '*.dmg' -o -iname '*.msi' -o -iname '*.exe' -o -iname '*.deb' -o -iname '*.AppImage' -o -iname '*.rpm' -o -iname '*.zip' \) -print0 \
+            | xargs -0 -I{} bash -c 'mkdir -p release-assets/$(dirname "{}" | sed "s#\./##; s#/#-#g") ; cp -v "{}" release-assets/ || true'
+          echo "Collected files:" ; ls -R release-assets || true
+
+      - name: Collect bundle/installers (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release-assets | Out-Null
+          $patterns = '*.exe','*.zip','*.msi','*.AppImage','*.dmg','*.deb','*.rpm'
+          foreach ($p in $patterns) {
+            Get-ChildItem -Path src-tauri,target -Recurse -Filter $p -ErrorAction SilentlyContinue | ForEach-Object {
+              Copy-Item -Path $_.FullName -Destination (Join-Path $PWD 'release-assets') -Force
+            }
+          }
+          Write-Host "Collected files:"; Get-ChildItem -Path release-assets -Recurse | Select-Object -First 200
+
+      - name: Upload packaged bundle
         uses: actions/upload-artifact@v4
         with:
           name: assets-${{ matrix.os }}
-          path: |
-            src-tauri/target/release/bundle/**
-            src-tauri/target/*/release/bundle/**
-            target/release/bundle/**
-            target/*/release/bundle/**
+          path: release-assets/**
           if-no-files-found: error
 
   publish:
