@@ -31,6 +31,7 @@ export default function RootLayout({
 }) {
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [dbReady, setDbReady] = useState(false)
 
   // Ensure client-side only rendering to prevent hydration mismatch
   useEffect(() => {
@@ -47,10 +48,16 @@ export default function RootLayout({
         if (isFirstLaunch) {
           console.log('First launch detected - showing import dialog')
           setShowImportDialog(true)
+          setDbReady(false)
+        } else {
+          setShowImportDialog(false)
+          setDbReady(true)
         }
       })
       .catch((error) => {
         console.error('Failed to check first launch:', error)
+        setShowImportDialog(false)
+        setDbReady(true)
       })
 
     // Also listen for events (fallback for hot reload and edge cases)
@@ -63,6 +70,7 @@ export default function RootLayout({
     const unlistenDbInit = listen('database-initialized', () => {
       console.log('Database initialized - hiding import dialog')
       setShowImportDialog(false)
+      setDbReady(true)
     })
 
     return () => {
@@ -79,6 +87,23 @@ export default function RootLayout({
           <div className="flex h-screen items-center justify-center">
             <div className="animate-pulse text-gray-400">Laden...</div>
           </div>
+        </body>
+      </html>
+    )
+  }
+
+  if (!dbReady) {
+    return (
+      <html lang="de">
+        <body className={`${sourceSans3.variable} font-sans`}>
+          <div className="flex h-screen items-center justify-center">
+            <div className="animate-pulse text-gray-400">Datenbank wird vorbereitet...</div>
+          </div>
+          <LegacyDatabaseImport
+            isOpen={showImportDialog}
+            onComplete={() => setShowImportDialog(false)}
+          />
+          <Toaster position="bottom-center" richColors closeButton />
         </body>
       </html>
     )

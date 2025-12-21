@@ -10,12 +10,81 @@ use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Runtime};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 // Sequence counter for transcript updates
 static SEQUENCE_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 // Speech detection flag - reset per recording session
 static SPEECH_DETECTED_EMITTED: AtomicBool = AtomicBool::new(false);
+
+// Transcription progress tracking (for UI status + shutdown coordination)
+static TRANSCRIPTION_CHUNKS_QUEUED: AtomicU64 = AtomicU64::new(0);
+static TRANSCRIPTION_CHUNKS_COMPLETED: AtomicU64 = AtomicU64::new(0);
+static TRANSCRIPTION_LAST_ACTIVITY_MS: AtomicU64 = AtomicU64::new(0);
+static TRANSCRIPTION_ACTIVE: AtomicBool = AtomicBool::new(false);
+
+#[derive(Debug, Clone, Copy)]
+pub struct TranscriptionProgress {
+    pub queued: u64,
+    pub completed: u64,
+    pub last_activity_ms: u64,
+    pub is_active: bool,
+}
+
+fn now_epoch_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+fn mark_transcription_activity() {
+    TRANSCRIPTION_LAST_ACTIVITY_MS.store(now_epoch_ms(), Ordering::SeqCst);
+}
+
+pub fn reset_transcription_progress() {
+    TRANSCRIPTION_CHUNKS_QUEUED.store(0, Ordering::SeqCst);
+    TRANSCRIPTION_CHUNKS_COMPLETED.store(0, Ordering::SeqCst);
+    TRANSCRIPTION_LAST_ACTIVITY_MS.store(0, Ordering::SeqCst);
+    TRANSCRIPTION_ACTIVE.store(false, Ordering::SeqCst);
+}
+
+pub fn get_transcription_progress() -> TranscriptionProgress {
+    let last_activity = TRANSCRIPTION_LAST_ACTIVITY_MS.load(Ordering::SeqCst);
+    let last_activity_ms = if last_activity == 0 {
+        0
+    } else {
+        now_epoch_ms().saturating_sub(last_activity)
+    };
+
+    TranscriptionProgress {
+        queued: TRANSCRIPTION_CHUNKS_QUEUED.load(Ordering::SeqCst),
+        completed: TRANSCRIPTION_CHUNKS_COMPLETED.load(Ordering::SeqCst),
+        last_activity_ms,
+        is_active: TRANSCRIPTION_ACTIVE.load(Ordering::SeqCst),
+    }
+}
+
+fn mark_transcription_started() {
+    TRANSCRIPTION_ACTIVE.store(true, Ordering::SeqCst);
+    mark_transcription_activity();
+}
+
+fn mark_chunk_queued() {
+    TRANSCRIPTION_CHUNKS_QUEUED.fetch_add(1, Ordering::SeqCst);
+    mark_transcription_activity();
+}
+
+fn mark_chunk_completed() {
+    TRANSCRIPTION_CHUNKS_COMPLETED.fetch_add(1, Ordering::SeqCst);
+    mark_transcription_activity();
+}
+
+fn mark_transcription_finished() {
+    TRANSCRIPTION_ACTIVE.store(false, Ordering::SeqCst);
+    mark_transcription_activity();
+}
 
 /// Reset the speech detected flag for a new recording session
 pub fn reset_speech_detected_flag() {
@@ -49,6 +118,9 @@ pub fn start_transcription_task<R: Runtime>(
     tokio::spawn(async move {
         info!("🚀 Starting optimized parallel transcription task - guaranteeing zero chunk loss");
 
+        reset_transcription_progress();
+        mark_transcription_started();
+
         // Initialize transcription engine (Whisper or Parakeet based on config)
         let transcription_engine = match super::engine::get_or_init_transcription_engine(&app).await {
             Ok(engine) => engine,
@@ -59,6 +131,7 @@ pub fn start_transcription_task<R: Runtime>(
                     "userMessage": "Recording failed: Unable to initialize speech recognition. Please check your model settings.",
                     "actionable": true
                 }));
+                mark_transcription_finished();
                 return;
             }
         };
@@ -137,6 +210,7 @@ pub fn start_transcription_task<R: Runtime>(
                                 warn!("⚠️ Worker {}: Model unloaded, but continuing to preserve chunk {}", worker_id, chunk.chunk_id);
                                 // Still count as completed even if we can't process
                                 chunks_completed_clone.fetch_add(1, Ordering::SeqCst);
+                                mark_chunk_completed();
                                 continue;
                             }
 
@@ -242,11 +316,13 @@ pub fn start_transcription_task<R: Runtime>(
                                             // Skip silently, this is expected for very short chunks
                                             info!("Worker {}: {}", worker_id, e);
                                             chunks_completed_clone.fetch_add(1, Ordering::SeqCst);
+                                            mark_chunk_completed();
                                             continue;
                                         }
                                         TranscriptionError::ModelNotLoaded => {
                                             warn!("Worker {}: Model unloaded during transcription", worker_id);
                                             chunks_completed_clone.fetch_add(1, Ordering::SeqCst);
+                                            mark_chunk_completed();
                                             continue;
                                         }
                                         _ => {
@@ -260,6 +336,7 @@ pub fn start_transcription_task<R: Runtime>(
                             // Mark chunk as completed
                             let completed =
                                 chunks_completed_clone.fetch_add(1, Ordering::SeqCst) + 1;
+                            mark_chunk_completed();
                             let queued = chunks_queued_clone.load(Ordering::SeqCst);
 
                             // PERFORMANCE: Only log progress every 5th chunk to reduce I/O overhead
@@ -324,6 +401,7 @@ pub fn start_transcription_task<R: Runtime>(
         let mut receiver = transcription_receiver;
         while let Some(chunk) = receiver.recv().await {
             let queued = chunks_queued.fetch_add(1, Ordering::SeqCst) + 1;
+            mark_chunk_queued();
             info!(
                 "📥 Dispatching chunk {} to workers (total queued: {})",
                 chunk.chunk_id, queued
@@ -398,6 +476,16 @@ pub fn start_transcription_task<R: Runtime>(
                 break;
             }
         }
+
+        let final_queued = chunks_queued.load(Ordering::SeqCst);
+        let final_completed = chunks_completed.load(Ordering::SeqCst);
+
+        mark_transcription_finished();
+
+        let _ = app.emit("transcription-complete", serde_json::json!({
+            "chunks_queued": final_queued,
+            "chunks_completed": final_completed
+        }));
 
         info!("✅ Parallel transcription task completed - all workers finished, ready for model unload");
     })

@@ -735,10 +735,13 @@ pub async fn is_recording() -> bool {
 
 /// Get recording statistics
 pub async fn get_transcription_status() -> TranscriptionStatus {
+    let progress = transcription::get_transcription_progress();
+    let pending = progress.queued.saturating_sub(progress.completed) as usize;
+
     TranscriptionStatus {
-        chunks_in_queue: 0,
-        is_processing: IS_RECORDING.load(Ordering::SeqCst),
-        last_activity_ms: 0,
+        chunks_in_queue: pending,
+        is_processing: progress.is_active || IS_RECORDING.load(Ordering::SeqCst),
+        last_activity_ms: progress.last_activity_ms,
     }
 }
 

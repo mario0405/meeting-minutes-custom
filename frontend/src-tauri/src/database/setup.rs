@@ -1,4 +1,4 @@
-use log::info;
+use log::{error, info};
 use tauri::{AppHandle, Emitter, Manager};
 
 use super::manager::DatabaseManager;
@@ -19,9 +19,9 @@ pub async fn initialize_database_on_startup(app: &AppHandle) -> Result<(), Strin
         let app_handle = app.clone();
         tauri::async_runtime::spawn(async move {
             tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
-            app_handle
-                .emit("first-launch-detected", ())
-                .expect("Failed to emit first-launch-detected event");
+            if let Err(e) = app_handle.emit("first-launch-detected", ()) {
+                error!("Failed to emit first-launch-detected event: {}", e);
+            }
             info!("Emitted first-launch-detected after delay");
         });
     } else {

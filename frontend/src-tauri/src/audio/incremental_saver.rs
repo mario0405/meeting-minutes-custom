@@ -3,8 +3,6 @@ use anyhow::{Result, anyhow};
 use log::{info, warn, error};
 use super::encode::encode_single_audio;
 use super::recording_state::AudioChunk;
-
-#[cfg (target_os = "macos")]
 use super::ffmpeg::find_ffmpeg_path;
 
 /// Audio data without device type (we only store mixed audio)
@@ -169,12 +167,8 @@ impl IncrementalAudioSaver {
 
         std::fs::write(&list_file, list_content)?;
 
-        #[cfg(target_os = "macos")]
         let ffmpeg_path = find_ffmpeg_path()
             .ok_or_else(|| anyhow!("FFmpeg not found. Please install FFmpeg to finalize recordings."))?;
-        
-        #[cfg(not(target_os = "macos"))]
-        let ffmpeg_path = "ffmpeg";  // Assume ffmpeg is in PATH on Windows/Linux
         info!("Using FFmpeg at: {:?}", ffmpeg_path);
 
         // Run FFmpeg concat command

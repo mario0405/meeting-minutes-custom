@@ -207,11 +207,13 @@ async fn is_recording() -> bool {
 }
 
 #[tauri::command]
-fn get_transcription_status() -> TranscriptionStatus {
+async fn get_transcription_status() -> TranscriptionStatus {
+    let status = audio::recording_commands::get_transcription_status().await;
+
     TranscriptionStatus {
-        chunks_in_queue: 0,
-        is_processing: false,
-        last_activity_ms: 0,
+        chunks_in_queue: status.chunks_in_queue,
+        is_processing: status.is_processing,
+        last_activity_ms: status.last_activity_ms,
     }
 }
 
@@ -465,10 +467,11 @@ pub fn run() {
             // }
 
             // Initialize database (handles first launch detection and conditional setup)
-            tauri::async_runtime::block_on(async {
+            if let Err(e) = tauri::async_runtime::block_on(async {
                 database::setup::initialize_database_on_startup(&_app.handle()).await
-            })
-            .expect("Failed to initialize database");
+            }) {
+                log::error!("Failed to initialize database: {}", e);
+            }
 
             // Initialize bundled templates directory for dynamic template discovery
             log::info!("Initializing bundled templates directory...");
