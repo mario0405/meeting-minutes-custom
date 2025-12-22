@@ -248,6 +248,8 @@ jobs:
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
+          name: "Protocolito ${{ github.ref_name }}"
+          body_path: .github/RELEASE_TEMPLATE.md
           files: |
             release-assets/**/*.zip
             release-assets/**/*.tar.gz

@@ -15,6 +15,7 @@ import { LegacyDatabaseImport } from '@/components/DatabaseImport/LegacyDatabase
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { RecordingStateProvider } from '@/contexts/RecordingStateContext'
 import { OllamaDownloadProvider } from '@/contexts/OllamaDownloadContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 
 const sourceSans3 = Source_Sans_3({
   subsets: ['latin'],
@@ -84,9 +85,11 @@ export default function RootLayout({
     return (
       <html lang="de">
         <body className={`${sourceSans3.variable} font-sans`}>
-          <div className="flex h-screen items-center justify-center">
-            <div className="animate-pulse text-gray-400">Laden...</div>
-          </div>
+          <ThemeProvider>
+            <div className="flex h-screen items-center justify-center">
+              <div className="animate-pulse text-gray-400">Laden...</div>
+            </div>
+          </ThemeProvider>
         </body>
       </html>
     )
@@ -96,14 +99,16 @@ export default function RootLayout({
     return (
       <html lang="de">
         <body className={`${sourceSans3.variable} font-sans`}>
-          <div className="flex h-screen items-center justify-center">
-            <div className="animate-pulse text-gray-400">Datenbank wird vorbereitet...</div>
-          </div>
-          <LegacyDatabaseImport
-            isOpen={showImportDialog}
-            onComplete={() => setShowImportDialog(false)}
-          />
-          <Toaster position="bottom-center" richColors closeButton />
+          <ThemeProvider>
+            <div className="flex h-screen items-center justify-center">
+              <div className="animate-pulse text-gray-400">Datenbank wird vorbereitet...</div>
+            </div>
+            <LegacyDatabaseImport
+              isOpen={showImportDialog}
+              onComplete={() => setShowImportDialog(false)}
+            />
+            <Toaster position="bottom-center" richColors closeButton />
+          </ThemeProvider>
         </body>
       </html>
     )
@@ -112,26 +117,28 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body className={`${sourceSans3.variable} font-sans`}>
-        <AnalyticsProvider>
-          <RecordingStateProvider>
-            <OllamaDownloadProvider>
-              <SidebarProvider>
-                <TooltipProvider>
-                  {/* <div className="titlebar h-8 w-full fixed top-0 left-0 bg-transparent" /> */}
-                  <div className="flex">
-                    <Sidebar />
-                    <MainContent>{children}</MainContent>
-                  </div>
-                </TooltipProvider>
-              </SidebarProvider>
-            </OllamaDownloadProvider>
-          </RecordingStateProvider>
-        </AnalyticsProvider>
-        <Toaster position="bottom-center" richColors closeButton />
-        <LegacyDatabaseImport
-          isOpen={showImportDialog}
-          onComplete={() => setShowImportDialog(false)}
-        />
+        <ThemeProvider>
+          <AnalyticsProvider>
+            <RecordingStateProvider>
+              <OllamaDownloadProvider>
+                <SidebarProvider>
+                  <TooltipProvider>
+                    {/* <div className="titlebar h-8 w-full fixed top-0 left-0 bg-transparent" /> */}
+                    <div className="flex">
+                      <Sidebar />
+                      <MainContent>{children}</MainContent>
+                    </div>
+                  </TooltipProvider>
+                </SidebarProvider>
+              </OllamaDownloadProvider>
+            </RecordingStateProvider>
+          </AnalyticsProvider>
+          <Toaster position="bottom-center" richColors closeButton />
+          <LegacyDatabaseImport
+            isOpen={showImportDialog}
+            onComplete={() => setShowImportDialog(false)}
+          />
+        </ThemeProvider>
       </body>
     </html>
   )

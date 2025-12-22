@@ -218,7 +218,7 @@ export function RecordingSettings({ onSave }: RecordingSettingsProps) {
         <div className="flex-1">
           <div className="font-medium">Hinweis beim Start der Aufnahme</div>
           <div className="text-sm text-gray-600">
-            Zeigt einen rechtlichen Hinweis, um Teilnehmende beim Start der Aufnahme zu informieren (US-Recht/Compliance)
+            Zeigt einen rechtlichen Hinweis, um Teilnehmende beim Start der Aufnahme zu informieren
           </div>
         </div>
         <Switch

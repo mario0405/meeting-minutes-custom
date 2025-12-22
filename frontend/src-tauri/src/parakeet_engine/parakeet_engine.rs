@@ -102,7 +102,7 @@ impl ParakeetEngine {
                 dirs::data_dir()
                     .or_else(|| dirs::home_dir())
                     .ok_or_else(|| anyhow!("Systemdatenverzeichnis konnte nicht gefunden werden"))?
-                    .join("Meetily")
+                    .join("protocolito")
                     .join("models")
                     .join("parakeet")
             }
