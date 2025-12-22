@@ -16,7 +16,7 @@ export function About() {
                     />
                 </div>
                 {/* <h1 className="text-xl font-bold text-gray-900">Protocolito</h1> */}
-                <span className="text-sm text-gray-500">v0.1.17 – Beta version</span>
+                <span className="text-sm text-gray-500">v0.1.18 – Beta version</span>
                 <p className="text-medium text-gray-600 mt-1">
                     Echtzeit-Notizen und Zusammenfassungen – alles bleibt auf deinem Gerät.
                 </p>
@@ -48,7 +48,7 @@ export function About() {
             {/* Coming Soon - Compact */}
             <div className="bg-blue-50 rounded p-3">
                 <p className="text-s text-blue-800">
-                    <span className="font-bold">Demnächst:</span> Eine Bibliothek von On‑Device‑KI‑Agenten – automatisiert Follow‑ups, Aufgaben-Tracking und mehr.
+                    <span className="font-bold">Demnächst:</span> Zugriff auf OpenAI's Whisper Modellen via API; Zugriff auf die neusten OpenAI Modelle (gpt-5.1 &amp; 5.2), weitere Verbesserungen der Qualität der Zusammenfassungen;
                 </p>
             </div>
         </div>
