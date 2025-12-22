@@ -11,7 +11,6 @@ Privacy-first AI meeting assistant that captures, transcribes, and summarizes me
 
 ## Downloads
 Get the latest release from GitHub:
-https://github.com/Zackriya-Solutions/meeting-minutes/releases/latest
 
 - Windows: `.msi` (installer) or `.exe` (portable)
 - macOS: `.dmg`
