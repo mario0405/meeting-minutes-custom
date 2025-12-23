@@ -11,6 +11,7 @@ Privacy-first AI meeting assistant that captures, transcribes, and summarizes me
 
 ## Downloads
 Get the latest release from GitHub:
+https://github.com/mario0405/meeting-minutes-custom/releases/tag/v0.1.18
 
 - Windows: `.msi` (installer) or `.exe` (portable)
 - macOS: `.dmg`
